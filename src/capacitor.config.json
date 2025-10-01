@@ -1,0 +1,21 @@
+// ========================== capacitor.config.json (NEW) ==========================
+{
+  "appId": "com.kingsleybusiness.swapnstay", 
+  "appName": "Swap N Stay",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 0
+    }
+  },
+  "ios": {
+    "minVersion": "13.0"
+  },
+  "android": {
+    "allowMixedContent": true
+  }
+}
