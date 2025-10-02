@@ -1,0 +1,25 @@
+
+# .gitignore
+# Dependencies
+/node_modules
+/dist
+
+# Build output
+/build
+/out
+
+# Environment variables (NEVER COMMIT YOUR SECRETS)
+.env
+.env.*
+
+# Capacitor Native Projects (Large, generated files)
+/android
+/ios
+
+# Log files and common IDE/OS clutter
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+*.log
+
