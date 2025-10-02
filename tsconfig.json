@@ -1,0 +1,37 @@
+// ========================== tsconfig.json (NEW SINGLE FILE) ==========================
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+
+    /* 💡 Path Alias Configuration for Imports like '@/database' */
+    "baseUrl": ".", 
+    "paths": {
+      // This maps '@' to your 'src' folder
+      "@/*": ["./src/*"] 
+    }
+  },
+  "include": ["src"],
+  "exclude": ["node_modules"],
+  "references": [
+    // Include this reference to handle the vite.config.ts file
+    { "path": "./tsconfig.node.json" }
+  ]
+}
