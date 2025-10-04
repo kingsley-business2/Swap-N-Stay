@@ -24,7 +24,7 @@
     "src",
     "vite.config.ts",
     "src/service-worker-env.d.ts",
-    "src/types/workbox-extendable-event.d.ts"
+    "src/global.d.ts"
   ],
   "exclude": ["node_modules"],
   "references": [
