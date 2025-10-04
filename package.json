@@ -23,6 +23,7 @@
   "devDependencies": {
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
+    "@types/service-worker": "^0.0.45",
     "@typescript-eslint/eslint-plugin": "^7.11.0",
     "@typescript-eslint/parser": "^7.11.0",
     "@vitejs/plugin-react": "^4.3.0",
@@ -32,7 +33,7 @@
     "eslint-plugin-react-refresh": "^0.4.7",
     "postcss": "^8.4.38",
     "tailwindcss": "^3.4.3",
-    "typescript": "^5.4.5",
+    "typescript": "5.3.3",
     "vite": "^5.2.13",
     "vite-plugin-pwa": "^0.20.0",
     "workbox-core": "^7.1.0",
@@ -43,4 +44,3 @@
     "@capacitor/ios": "5.7.0"
   }
 }
-
