@@ -2,9 +2,11 @@
   "compilerOptions": {
     "composite": true,
     "module": "ESNext",
-    "moduleResolution": "bundler",
-    "types": ["./src/global"]
+    "moduleResolution": "NodeNext",
+    "target": "ES2020",
+    "types": []
   },
-  "include": ["vite.config.ts"]
+  "include": [
+    "prebuild.js"
+  ]
 }
-
