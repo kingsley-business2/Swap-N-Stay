@@ -1,9 +1,10 @@
-// ========================== tsconfig.node.json (NEW MINIMAL FILE) ==========================
 {
   "compilerOptions": {
     "composite": true,
     "module": "ESNext",
-    "moduleResolution": "bundler"
+    "moduleResolution": "bundler",
+    "types": ["./src/global"]
   },
   "include": ["vite.config.ts"]
 }
+
