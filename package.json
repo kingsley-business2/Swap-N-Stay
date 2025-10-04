@@ -1,15 +1,14 @@
-// ========================== package.json (UPDATED) ==========================
 {
   "name": "swap-n-stay",
+  "private": true,
   "version": "1.0.0",
-  // ❌ REMOVED: "homepage" for GitHub Pages
+  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    // ❌ REMOVED: "predeploy" and "deploy" scripts
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     
-    // ➕ ADDED: New Capacitor scripts
     "capacitor:copy": "npx cap copy",
     "capacitor:open:ios": "npx cap open ios",
     "capacitor:open:android": "npx cap open android",
@@ -18,15 +17,27 @@
   "dependencies": {
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    // ... your other dependencies
+    "@supabase/supabase-js": "^2.43.4",
+    "react-router-dom": "^6.23.1",
+    "@capacitor/core": "5.7.0"
   },
   "devDependencies": {
-    // ... your other devDependencies
-    "typescript": "^5.2.2",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@typescript-eslint/eslint-plugin": "^7.11.0",
+    "@typescript-eslint/parser": "^7.11.0",
+    "@vitejs/plugin-react": "^4.3.0",
+    "autoprefixer": "^10.4.19",
+    "eslint": "^8.57.0",
+    "eslint-plugin-react-hooks": "^4.6.2",
+    "eslint-plugin-react-refresh": "^0.4.7",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.3",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.13",
+    "vite-plugin-pwa": "^0.20.0",
     "@capacitor/cli": "5.7.0",
-    "@capacitor/core": "5.7.0",
     "@capacitor/android": "5.7.0",
     "@capacitor/ios": "5.7.0"
-    // ❌ REMOVED: "gh-pages"
   }
 }
