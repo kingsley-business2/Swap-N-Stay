@@ -11,7 +11,8 @@
     "capacitor:copy": "npx cap copy",
     "capacitor:open:ios": "npx cap open ios",
     "capacitor:open:android": "npx cap open android",
-    "sync:native": "npm run build && npm run capacitor:copy"
+    "sync:native": "npm run build && npm run capacitor:copy",
+    "postinstall": "node patch-antfu.js"
   },
   "dependencies": {
     "react": "^18.3.1",
@@ -40,6 +41,7 @@
     "@vite-pwa/assets-generator": "^0.2.4",
     "@capacitor/cli": "5.7.0",
     "@capacitor/android": "5.7.0",
-    "@capacitor/ios": "5.7.0"
+    "@capacitor/ios": "5.7.0",
+    "@antfu/utils": "^0.7.7"
   }
 }
