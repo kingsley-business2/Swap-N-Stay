@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "ES2020",
     "useDefineForClassFields": true,
-    "lib": ["ES2020", "DOM", "DOM.Iterable", "WebWorker"],
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
     "moduleResolution": "NodeNext",
@@ -22,9 +22,7 @@
   },
   "include": [
     "src",
-    "vite.config.ts",
-    "src/service-worker-env.d.ts",
-    "src/global.d.ts"
+    "vite.config.ts"
   ],
   "exclude": ["node_modules"],
   "references": [
