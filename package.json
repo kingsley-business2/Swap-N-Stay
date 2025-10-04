@@ -34,9 +34,8 @@
     "tailwindcss": "^3.4.3",
     "typescript": "^5.4.5",
     "vite": "^5.2.13",
-    // ADDED/CONFIRMED PWA & WORKBOX DEPENDENCIES
     "vite-plugin-pwa": "^0.20.0",
-    "workbox-core": "^7.1.0", 
+    "workbox-core": "^7.1.0",
     "workbox-window": "^7.1.0",
     "@vite-pwa/assets-generator": "^0.2.4",
     "@capacitor/cli": "5.7.0",
@@ -44,3 +43,4 @@
     "@capacitor/ios": "5.7.0"
   }
 }
+
