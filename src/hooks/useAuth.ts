@@ -1,11 +1,4 @@
-// ========================== src/hooks/useAuth.ts (UPDATED) ==========================
-import {
-  useEffect,
-  useState,
-  createContext,
-  useContext,
-  ReactNode,
-} from 'react';
+import { useEffect, useState, createContext, useContext, ReactNode } from 'react';
 import { supabase } from '../api/supabase';
 import { User } from '@supabase/supabase-js';
 import { UserProfile } from '../types/custom';
@@ -91,24 +84,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (error) console.error('Error logging out:', error);
   };
 
-  const value: AuthContextType = {
-    user,
-    profile,
-    isAuthenticated: !!user,
-    loading,
-    isAdmin,
-    logout,
-  };
-
   return (
-    <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+    <AuthContext.Provider
+      value={{ user, profile, isAuthenticated: !!user, loading, isAdmin, logout }}
+    >
+      {children}
+    </AuthContext.Provider>
   );
 };
 
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (!context) throw new Error('useAuth must be used within an AuthProvider');
   return context;
 };
