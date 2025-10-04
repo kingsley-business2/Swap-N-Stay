@@ -20,7 +20,7 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src", "vite.config.ts"],
+  "include": ["src", "vite.config.ts", "src/service-worker-env.d.ts"],
   "exclude": ["node_modules"],
   "references": [
     { "path": "./tsconfig.node.json" }
