@@ -1,12 +1,10 @@
 {
   "compilerOptions": {
     "composite": true,
-    "module": "ESNext",
+    "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "target": "ES2020",
     "types": []
   },
-  "include": [
-    "prebuild.js"
-  ]
+  "include": ["prebuild.js"]
 }
