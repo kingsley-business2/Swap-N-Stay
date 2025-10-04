@@ -1,9 +1,9 @@
-// ========================== tsconfig.json (NEW SINGLE FILE) ==========================
+// ========================== tsconfig.json (UPDATED) ==========================
 {
   "compilerOptions": {
     "target": "ES2020",
     "useDefineForClassFields": true,
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "lib": ["ES2020", "DOM", "DOM.Iterable", "WebWorker"],
     "module": "ESNext",
     "skipLibCheck": true,
 
@@ -24,14 +24,12 @@
     /* 💡 Path Alias Configuration for Imports like '@/database' */
     "baseUrl": ".", 
     "paths": {
-      // This maps '@' to your 'src' folder
-      "@/*": ["./src/*"] 
+      "@/*": ["./src/*"]
     }
   },
-  "include": ["src"],
+  "include": ["src", "vite.config.ts"],
   "exclude": ["node_modules"],
   "references": [
-    // Include this reference to handle the vite.config.ts file
     { "path": "./tsconfig.node.json" }
   ]
 }
