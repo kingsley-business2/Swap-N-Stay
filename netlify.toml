@@ -1,3 +1,11 @@
 [build]
 command = "npm run build"
 publish = "dist"
+
+[functions]
+directory = "netlify/functions"
+
+[environment]
+VITE_SUPABASE_URL = "your-supabase-url"
+VITE_SUPABASE_ANON_KEY = "your-anon-key"
+
