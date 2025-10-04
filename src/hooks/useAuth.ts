@@ -1,4 +1,4 @@
-// ========================== src/hooks/useAuth.ts ==========================
+// ========================== src/hooks/useAuth.ts (CORRECTED) ==========================
 import { useEffect, useState, createContext, useContext, ReactNode } from 'react';
 import { supabase } from '../api/supabase';
 import { User } from '@supabase/supabase-js';
