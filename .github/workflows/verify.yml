@@ -1,5 +1,28 @@
-- name: Run file verification
-  run: node verify-files.cjs
+name: Verify and Typecheck
 
-- name: Type check
-  run: npm run typecheck
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run file verification
+        run: node verify-files.cjs
+
+      - name: Type check
+        run: npm run typecheck
