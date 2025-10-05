@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
+    "target": "esnext",
     "module": "esnext",
     "moduleResolution": "node16",
-    "target": "esnext",
     "allowImportingTsExtensions": true,
     "jsx": "react-jsx",
     "strict": true,
@@ -12,4 +12,3 @@
   },
   "include": ["src", "src/types"]
 }
-
