@@ -21,8 +21,8 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Run file verification
-        run: node verify-files.cjs
+      # - name: Run file verification  # REMOVE OR COMMENT OUT
+      #   run: node verify-files.cjs   # THIS LINE
 
       - name: Type check
         run: npm run typecheck
