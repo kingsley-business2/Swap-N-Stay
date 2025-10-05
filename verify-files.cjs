@@ -13,7 +13,7 @@ const files = [
   ReactNode,
 } from 'react';
 import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '../lib/supabase.ts';
+import { supabase } from '@/lib/supabase';
 
 type AuthContextType = {
   user: User | null;
@@ -72,7 +72,7 @@ export const useAuth = (): AuthContextType => {
   }
   return context;
 };`,
-    hash: 'd3c2f1e', // update this after first run
+    hash: 'd3c2f1e',
   },
   {
     path: 'src/lib/supabase.ts',
@@ -86,7 +86,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);`,
-    hash: 'a9e1b3c', // update this after first run
+    hash: 'a9e1b3c',
   },
 ];
 
@@ -122,5 +122,3 @@ for (const key of requiredKeys) {
   }
 }
 console.log('✅ .env file validated');
-
-
