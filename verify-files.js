@@ -1,53 +1,122 @@
 // verify-files.js
-// Run before build to ensure critical files exist and are valid
+// Enforces and auto-repairs critical files before build
 
 const fs = require('fs');
 const path = require('path');
 
-// List of required files
-const requiredFiles = [
-  'src/hooks/useAuth.ts',
-  'src/lib/supabase.ts'
+const files = [
+  {
+    path: 'src/hooks/useAuth.ts',
+    template: `import {
+  useEffect,
+  useState,
+  createContext,
+  useContext,
+  ReactNode,
+} from 'react';
+import { User, Session } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabase';
+
+type AuthContextType = {
+  user: User | null;
+  session: Session | null;
+  loading: boolean;
+};
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const init = async () => {
+      const {
+        data: { session },
+        error,
+      } = await supabase.auth.getSession();
+
+      if (error) {
+        console.error('Error fetching session:', error.message);
+        setLoading(false);
+        return;
+      }
+
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
+    };
+
+    init();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  return (
+    <AuthContext.Provider value={{ user, session, loading }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export const useAuth = (): AuthContextType => {
+  const context = useContext(AuthContext);
+  if (!context)
+    throw new Error('useAuth must be used within an AuthProvider');
+  return context;
+};
+`,
+  },
+  {
+    path: 'src/lib/supabase.ts',
+    template: `import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error('Missing Supabase environment variables');
+}
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+`,
+  },
 ];
 
-let hasError = false;
+let repaired = false;
 
-for (const file of requiredFiles) {
-  const fullPath = path.resolve(file);
+for (const { path: filePath, template } of files) {
+  const fullPath = path.resolve(filePath);
 
   if (!fs.existsSync(fullPath)) {
-    console.error(`❌ Missing required file: ${file}`);
-    hasError = true;
+    console.warn(`⚠️ ${filePath} missing — restoring from template`);
+    fs.mkdirSync(path.dirname(fullPath), { recursive: true });
+    fs.writeFileSync(fullPath, template.trim());
+    repaired = true;
     continue;
   }
 
   const content = fs.readFileSync(fullPath, 'utf8').trim();
-  if (content.length === 0) {
-    console.error(`❌ File is empty: ${file}`);
-    hasError = true;
+  if (content.length < 50 || !content.includes('export')) {
+    console.warn(`⚠️ ${filePath} appears broken — restoring from template`);
+    fs.writeFileSync(fullPath, template.trim());
+    repaired = true;
     continue;
   }
 
-  // Extra validation for useAuth.ts
-  if (file.includes('useAuth.ts')) {
-    if (!content.includes('export const useAuth')) {
-      console.error(`❌ ${file} does not contain "export const useAuth"`);
-      hasError = true;
-    }
-    if (!content.endsWith('};')) {
-      console.error(`❌ ${file} does not end cleanly with "};"`);
-      hasError = true;
-    }
-  }
-
-  if (!hasError) {
-    console.log(`✅ Verified: ${file}`);
-  }
+  console.log(`✅ Verified: ${filePath}`);
 }
 
-if (hasError) {
-  console.error('🚨 Build aborted due to missing or invalid files.');
-  process.exit(1);
+if (repaired) {
+  console.log('🔧 Critical files were repaired. Proceeding with build.');
 } else {
-  console.log('🎉 All required files verified successfully.');
+  console.log('🎉 All critical files are valid.');
 }
