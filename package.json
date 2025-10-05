@@ -1,4 +1,5 @@
-{
+# Recreate package.json cleanly
+echo '{
   "name": "swap-n-stay",
   "version": "1.0.0",
   "type": "module",
@@ -18,4 +19,7 @@
     "@types/react-dom": "^18.0.11",
     "@types/react-hot-toast": "^2.4.0"
   }
-}
+}' > package.json
+
+# Generate package-lock.json
+npm install
