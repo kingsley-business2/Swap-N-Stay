@@ -6,7 +6,7 @@
     "dev": "vite",
     "prebuild": "node verify-files.cjs",
     "typecheck": "tsc --noEmit",
-    "build": "npm run prebuild && npm run typecheck && vite build",
+    "build": "npm run typecheck && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
