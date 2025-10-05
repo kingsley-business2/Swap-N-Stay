@@ -1,0 +1,176 @@
+import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
+import { User, AuthCredentials, LoginResponse } from '../types/auth';
+
+// Auth context type
+interface AuthContextType {
+  user: User | null;
+  isLoading: boolean;
+  login: (credentials: AuthCredentials) => Promise<void>;
+  logout: () => void;
+  register: (userData: Partial<User>) => Promise<void>;
+  isAuthenticated: boolean;
+}
+
+// Create auth context
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+// Auth provider props
+interface AuthProviderProps {
+  children: ReactNode;
+}
+
+// Mock user data (replace with your actual user type)
+const mockUser: User = {
+  id: '1',
+  email: 'user@example.com',
+  name: 'John Doe',
+  role: 'user',
+};
+
+// Main hook
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
+
+// Auth provider component
+export const AuthProvider = ({ children }: AuthProviderProps) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  // Check for existing auth on mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        // Check if user is logged in (e.g., check localStorage, token, etc.)
+        const token = localStorage.getItem('authToken');
+        const userData = localStorage.getItem('userData');
+        
+        if (token && userData) {
+          // Validate token with your backend here
+          // const validatedUser = await validateToken(token);
+          setUser(JSON.parse(userData));
+        }
+      } catch (error) {
+        console.error('Auth check failed:', error);
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('userData');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, []);
+
+  // Login function
+  const login = async (credentials: AuthCredentials): Promise<void> => {
+    try {
+      setIsLoading(true);
+      
+      // Replace with your actual login API call
+      // const response = await fetch('/api/auth/login', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify(credentials),
+      // });
+      
+      // const data: LoginResponse = await response.json();
+      
+      // Mock login - replace with actual API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      if (credentials.email && credentials.password) {
+        const mockToken = 'mock-jwt-token';
+        localStorage.setItem('authToken', mockToken);
+        localStorage.setItem('userData', JSON.stringify(mockUser));
+        setUser(mockUser);
+      } else {
+        throw new Error('Invalid credentials');
+      }
+    } catch (error) {
+      console.error('Login failed:', error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Logout function
+  const logout = (): void => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('userData');
+    setUser(null);
+    
+    // Optional: Redirect to login page
+    // window.location.href = '/login';
+  };
+
+  // Register function
+  const register = async (userData: Partial<User>): Promise<void> => {
+    try {
+      setIsLoading(true);
+      
+      // Replace with your actual registration API call
+      // const response = await fetch('/api/auth/register', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify(userData),
+      // });
+      
+      // Mock registration - replace with actual API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      if (userData.email) {
+        // Auto-login after registration or redirect to login
+        console.log('Registration successful for:', userData.email);
+      } else {
+        throw new Error('Registration failed');
+      }
+    } catch (error) {
+      console.error('Registration failed:', error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const value: AuthContextType = {
+    user,
+    isLoading,
+    login,
+    logout,
+    register,
+    isAuthenticated: !!user,
+  };
+
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+// Optional: Protected route hook
+export const useProtectedRoute = (requiredRole?: string) => {
+  const { user, isAuthenticated, isLoading } = useAuth();
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      // Redirect to login if not authenticated
+      window.location.href = '/login';
+    }
+    
+    if (!isLoading && isAuthenticated && requiredRole && user?.role !== requiredRole) {
+      // Redirect to unauthorized page if role doesn't match
+      window.location.href = '/unauthorized';
+    }
+  }, [isAuthenticated, isLoading, user, requiredRole]);
+
+  return { user, isAuthenticated, isLoading };
+};
+
+export default useAuth;
