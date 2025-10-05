@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 
 const files = [
   {
@@ -71,6 +72,7 @@ export const useAuth = (): AuthContextType => {
   }
   return context;
 };`,
+    hash: 'd3c2f1e', // update this after first run
   },
   {
     path: 'src/lib/supabase.ts',
@@ -84,14 +86,41 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);`,
+    hash: 'a9e1b3c', // update this after first run
   },
 ];
 
-for (const { path: relPath, template } of files) {
-  const fullPath = path.resolve(relPath);
-  fs.mkdirSync(path.dirname(fullPath), { recursive: true });
-  fs.writeFileSync(fullPath, template.trim());
-  console.log(`🔁 Overwritten: ${relPath}`);
+function hash(content) {
+  return crypto.createHash('sha256').update(content).digest('hex').slice(0, 7);
 }
 
-console.log('✅ All critical files restored before build.');
+for (const { path: relPath, template, hash: expected } of files) {
+  const fullPath = path.resolve(relPath);
+  const actual = fs.existsSync(fullPath)
+    ? hash(fs.readFileSync(fullPath, 'utf8'))
+    : 'missing';
+
+  if (actual !== expected) {
+    fs.mkdirSync(path.dirname(fullPath), { recursive: true });
+    fs.writeFileSync(fullPath, template.trim());
+    console.log(`🔁 Overwritten: ${relPath} (was ${actual}, expected ${expected})`);
+  } else {
+    console.log(`✅ Verified: ${relPath}`);
+  }
+}
+
+// .env validation
+const envPath = path.resolve('.env');
+const requiredKeys = ['VITE_SUPABASE_URL', 'VITE_SUPABASE_ANON_KEY'];
+if (!fs.existsSync(envPath)) {
+  throw new Error('❌ Missing .env file');
+}
+const envContent = fs.readFileSync(envPath, 'utf8');
+for (const key of requiredKeys) {
+  if (!envContent.includes(key)) {
+    throw new Error(`❌ Missing ${key} in .env`);
+  }
+}
+console.log('✅ .env file validated');
+
+
