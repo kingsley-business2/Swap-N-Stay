@@ -23,7 +23,7 @@ jobs:
         run: npm install
 
       - name: Run file verification
-        run: node verify-files.js
+        run: node verify-files.cjs
 
       - name: Type check
         run: npm run typecheck
