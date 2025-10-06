@@ -48,7 +48,12 @@ export const useAuth = () => {
         .eq('id', userId)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.log('New user - profile being created, retrying...');
+        // Retry after 2 seconds for new users
+        setTimeout(() => fetchProfile(userId), 2000);
+        return;
+      }
       setProfile(data);
     } catch (error) {
       console.error('Error fetching profile:', error);
