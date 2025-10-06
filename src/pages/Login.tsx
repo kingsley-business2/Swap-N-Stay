@@ -1,7 +1,6 @@
 // ========================== src/pages/Login.tsx ==========================
 import React from 'react';
 import { Auth } from '@supabase/auth-ui-react';
-import { ThemeSupa } from '@supabase/auth-ui-react';
 import { supabase } from '../api/supabase';
 
 const Login: React.FC = () => {
@@ -10,7 +9,7 @@ const Login: React.FC = () => {
       <h2 className="text-2xl font-bold mb-4">Sign In / Sign Up</h2>
       <Auth
         supabaseClient={supabase}
-        appearance={{ theme: ThemeSupa }}
+        appearance={{ theme: 'default' }}
         providers={['google', 'github']}
       />
     </div>
