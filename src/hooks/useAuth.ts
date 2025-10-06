@@ -49,14 +49,14 @@ export const useAuth = () => {
         .single();
 
       if (error) {
-        console.log('New user - profile being created, retrying...');
-        // Retry after 2 seconds for new users
-        setTimeout(() => fetchProfile(userId), 2000);
-        return;
+        console.log('New user - profile being created...');
+        setProfile(null);
+      } else {
+        setProfile(data);
       }
-      setProfile(data);
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      console.log('Profile not ready yet');
+      setProfile(null);
     } finally {
       setLoading(false);
     }
