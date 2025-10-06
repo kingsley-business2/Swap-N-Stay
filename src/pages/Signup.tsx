@@ -12,19 +12,23 @@ const Signup: React.FC = () => {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!email || !password) {
+      toast.error('Please fill in all fields');
+      return;
+    }
+
     setLoading(true);
 
     try {
       console.log('Starting signup...');
       
-      // Test Supabase connection first
-      const { data: testData, error: testError } = await supabase.auth.getSession();
-      console.log('Auth test:', testData, testError);
-
-      // Try signup
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
-        password
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`
+        }
       });
 
       console.log('Signup result:', authData, authError);
@@ -34,13 +38,26 @@ const Signup: React.FC = () => {
         return;
       }
 
+      // Check if email confirmation is required
+      if (authData.user && authData.user.identities?.length === 0) {
+        toast.error('User already exists');
+        return;
+      }
+
       if (authData.user) {
-        toast.success('Account created successfully! Check your email.');
-        navigate('/login');
+        if (authData.session) {
+          // User is immediately logged in (if email confirmations are disabled)
+          toast.success('Account created successfully! Welcome!');
+          navigate('/auth-redirect');
+        } else {
+          // Email confirmation required
+          toast.success('Account created! Please check your email to confirm your account.');
+          navigate('/login');
+        }
       }
     } catch (error: any) {
       console.error('Signup error:', error);
-      toast.error(`Error: ${error.message}`);
+      toast.error(`Unexpected error: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -60,6 +77,7 @@ const Signup: React.FC = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            placeholder="Enter your email"
           />
         </div>
 
@@ -73,6 +91,8 @@ const Signup: React.FC = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            placeholder="Enter your password"
+            minLength={6}
           />
         </div>
 
