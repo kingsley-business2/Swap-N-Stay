@@ -1,7 +1,7 @@
 // ========================== src/pages/Login.tsx ==========================
 import React from 'react';
 import { Auth } from '@supabase/auth-ui-react';
-import { ThemeSupa } from '@supabase/auth-ui-shared';
+import { ThemeSupa } from '@supabase/auth-ui-react';
 import { supabase } from '../api/supabase';
 
 const Login: React.FC = () => {
