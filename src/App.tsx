@@ -10,46 +10,44 @@ import Explore from './pages/Explore';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import SetupProfile from './pages/SetupProfile'; // ✅ Import actual component
 import ErrorPage from './pages/ErrorPage';
 
-// Placeholder Pages (Assuming SetupProfile is not complex yet)
-const SetupProfile = () => <BaseLayout><h1 className="p-4">Complete Profile Setup</h1></BaseLayout>;
-
-
 const App: React.FC = () => {
-  const { loading } = useAuth();
+  const { loading, authChecked } = useAuth(); // ✅ Add authChecked
 
-  if (loading) {
+  // ✅ Wait for auth to be fully checked
+  if (loading || !authChecked) {
     return (
-        <div className="flex items-center justify-center min-h-screen">
-            <span className="loading loading-spinner loading-lg"></span>
-        </div>
+      <div className="flex items-center justify-center min-h-screen">
+        <span className="loading loading-spinner loading-lg"></span>
+      </div>
     );
   }
 
   return (
     <Routes>
-      {/* Routes accessible to everyone */}
+      {/* Public Routes */}
       <Route path="/login" element={<BaseLayout><Login /></BaseLayout>} />
       <Route path="/signup" element={<BaseLayout><Signup /></BaseLayout>} />
       <Route path="/error" element={<BaseLayout><ErrorPage /></BaseLayout>} />
-      <Route path="/setup-profile" element={<SetupProfile />} />
+      <Route path="/setup-profile" element={<BaseLayout><SetupProfile /></BaseLayout>} /> {/* ✅ Use actual component */}
       
-      {/* Root path uses AuthRedirect */}
-      <Route path="/" element={<AuthRedirect />} />
+      {/* Auth Redirect Route */}
+      <Route path="/auth-redirect" element={<AuthRedirect />} /> {/* ✅ Add this route */}
+      
+      {/* Root path redirects to auth flow */}
+      <Route path="/" element={<AuthRedirect />} /> {/* ✅ This will handle initial redirect */}
 
-      {/* Authenticated Routes, wrapped in the main layout */}
+      {/* Protected Routes - Wrapped in BaseLayout */}
       <Route path="/" element={<BaseLayout />}>
-        {/* Tier-Based Destinations */}
-        <Route path="/marketplace" element={<Marketplace />} />
-        <Route path="/explore" element={<Explore />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        
-        {/* Admin Only Route */}
-        <Route path="/admin" element={<AdminDashboard />} /> 
+        <Route path="marketplace" element={<Marketplace />} /> {/* ✅ Fixed path */}
+        <Route path="explore" element={<Explore />} /> {/* ✅ Fixed path */}
+        <Route path="dashboard" element={<Dashboard />} /> {/* ✅ Fixed path */}
+        <Route path="admin" element={<AdminDashboard />} /> {/* ✅ Fixed path */}
       </Route>
       
-      {/* Catch-all for 404s */}
+      {/* Catch-all 404 */}
       <Route path="*" element={<BaseLayout><h1>404: Not Found</h1></BaseLayout>} />
     </Routes>
   );
