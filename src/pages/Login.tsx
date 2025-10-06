@@ -10,7 +10,7 @@ const Login: React.FC = () => {
       <Auth
         supabaseClient={supabase}
         appearance={{ theme: 'default' }}
-        providers={['google', 'github']}
+        providers={[]} // REMOVED Google/GitHub - email/password only
       />
     </div>
   );
