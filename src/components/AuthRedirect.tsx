@@ -4,12 +4,13 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import toast from 'react-hot-toast';
 
-const AuthRedirect = () => {
-  const { user, profile, isAdmin, loading } = useAuth();
+const AuthRedirect: React.FC = () => {
+  const { user, profile, isAdmin, loading, authChecked } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (loading) return;
+    // Wait until auth state is fully determined
+    if (loading || !authChecked) return;
 
     if (!user) {
       toast.error('Please log in to continue.');
@@ -17,23 +18,38 @@ const AuthRedirect = () => {
       return;
     }
 
+    // User is logged in but profile might be loading or missing
     if (!profile) {
-        toast.error('Profile data is missing. Please complete setup.');
-        navigate('/setup-profile', { replace: true });
-        return;
+      console.log('Profile not ready, redirecting to setup...');
+      navigate('/setup-profile', { replace: true });
+      return;
     }
 
+    // User is logged in and has profile - redirect based on tier/admin status
     const tier = profile.tier;
 
-    if (isAdmin) navigate('/admin', { replace: true });
-    else if (tier === 'free') navigate('/explore', { replace: true });
-    else if (tier === 'premium' || tier === 'gold') navigate('/marketplace', { replace: true });
-    else {
-      toast.error('Unknown tier or access level.');
+    if (isAdmin) {
+      navigate('/admin', { replace: true });
+    } else if (tier === 'free') {
+      navigate('/explore', { replace: true });
+    } else if (tier === 'premium' || tier === 'gold') {
+      navigate('/marketplace', { replace: true });
+    } else {
+      console.error('Unknown tier:', tier);
+      toast.error('Unknown account type. Please contact support.');
       navigate('/error', { replace: true });
     }
 
-  }, [user, profile, isAdmin, loading, navigate]); 
+  }, [user, profile, isAdmin, loading, authChecked, navigate]);
+
+  // Show loading state while checking auth
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="loading loading-spinner loading-lg"></div>
+      </div>
+    );
+  }
 
   return null;
 };
