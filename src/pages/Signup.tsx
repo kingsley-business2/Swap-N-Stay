@@ -15,19 +15,32 @@ const Signup: React.FC = () => {
     setLoading(true);
 
     try {
+      console.log('Starting signup...');
+      
+      // Test Supabase connection first
+      const { data: testData, error: testError } = await supabase.auth.getSession();
+      console.log('Auth test:', testData, testError);
+
+      // Try signup
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password
       });
 
-      if (authError) throw authError;
+      console.log('Signup result:', authData, authError);
+
+      if (authError) {
+        toast.error(`Signup failed: ${authError.message}`);
+        return;
+      }
 
       if (authData.user) {
-        toast.success('Account created successfully!');
+        toast.success('Account created successfully! Check your email.');
         navigate('/login');
       }
     } catch (error: any) {
-      toast.error(error.message || 'Signup failed');
+      console.error('Signup error:', error);
+      toast.error(`Error: ${error.message}`);
     } finally {
       setLoading(false);
     }
