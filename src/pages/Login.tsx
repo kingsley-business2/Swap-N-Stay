@@ -9,8 +9,18 @@ const Login: React.FC = () => {
       <h2 className="text-2xl font-bold mb-4">Sign In / Sign Up</h2>
       <Auth
         supabaseClient={supabase}
-        appearance={{ theme: 'default' }}
-        providers={[]} // REMOVED Google/GitHub - email/password only
+        appearance={{ 
+          theme: 'default',
+          variables: {
+            default: {
+              colors: {
+                brand: '#3B82F6',
+                brandAccent: '#1D4ED8'
+              }
+            }
+          }
+        }}
+        providers={[]}
       />
     </div>
   );
