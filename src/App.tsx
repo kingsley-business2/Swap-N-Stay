@@ -9,6 +9,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import Explore from './pages/Explore';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
+import Signup from './pages/Signup';
 import ErrorPage from './pages/ErrorPage';
 
 // Placeholder Pages (Assuming SetupProfile is not complex yet)
@@ -30,6 +31,7 @@ const App: React.FC = () => {
     <Routes>
       {/* Routes accessible to everyone */}
       <Route path="/login" element={<BaseLayout><Login /></BaseLayout>} />
+      <Route path="/signup" element={<BaseLayout><Signup /></BaseLayout>} />
       <Route path="/error" element={<BaseLayout><ErrorPage /></BaseLayout>} />
       <Route path="/setup-profile" element={<SetupProfile />} />
       
