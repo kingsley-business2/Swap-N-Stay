@@ -1,6 +1,7 @@
 // ========================== src/pages/AdminDashboard.tsx ==========================
 import React from 'react';
 import { useAuth } from '../hooks/useAuth';
+import { Link } from 'react-router-dom';
 
 const AdminDashboard: React.FC = () => {
   const { isAdmin } = useAuth();
@@ -17,7 +18,34 @@ const AdminDashboard: React.FC = () => {
   return (
     <div className="p-8">
       <h1 className="text-3xl font-bold mb-4">Admin Control Panel</h1>
-      <p>Welcome, Administrator. Here you can manage users, tiers, and product reports.</p>
+      <p className="mb-8">Welcome, Administrator. Here you can manage users, tiers, and product reports.</p>
+      
+      {/* Simple Functional Buttons */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl">
+        <Link to="/admin/users" className="btn btn-primary btn-lg flex flex-col items-center p-6 h-32">
+          <span className="text-2xl mb-2">👥</span>
+          <span>Manage Users</span>
+          <span className="text-sm font-normal mt-1">View all users & upgrade tiers</span>
+        </Link>
+        
+        <Link to="/admin/ads" className="btn btn-secondary btn-lg flex flex-col items-center p-6 h-32">
+          <span className="text-2xl mb-2">📢</span>
+          <span>Manage Ads</span>
+          <span className="text-sm font-normal mt-1">Upload and manage advertisements</span>
+        </Link>
+        
+        <Link to="/admin/tiers" className="btn btn-accent btn-lg flex flex-col items-center p-6 h-32">
+          <span className="text-2xl mb-2">💰</span>
+          <span>Tier Management</span>
+          <span className="text-sm font-normal mt-1">Set prices & configure tiers</span>
+        </Link>
+        
+        <Link to="/admin/reports" className="btn btn-warning btn-lg flex flex-col items-center p-6 h-32">
+          <span className="text-2xl mb-2">🛡️</span>
+          <span>Content Reports</span>
+          <span className="text-sm font-normal mt-1">Review reported content</span>
+        </Link>
+      </div>
     </div>
   );
 };
