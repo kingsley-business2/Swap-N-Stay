@@ -31,12 +31,19 @@ const Login: React.FC = () => {
 
     try {
       const { error } = await supabase.auth.signInWithPassword({
-        email,
+        email: email.trim().toLowerCase(),
         password
       });
 
       if (error) {
-        toast.error(`Login failed: ${error.message}`);
+        console.error('Login error:', error);
+        if (error.message.includes('Invalid login credentials')) {
+          toast.error('Invalid email or password');
+        } else if (error.message.includes('Email not confirmed')) {
+          toast.error('Please confirm your email before logging in');
+        } else {
+          toast.error(`Login failed: ${error.message}`);
+        }
       } else {
         toast.success('Welcome back!');
         navigate('/auth-redirect');
@@ -64,6 +71,7 @@ const Login: React.FC = () => {
             onChange={(e) => setEmail(e.target.value)}
             required
             placeholder="Enter your email"
+            autoComplete="email"
           />
         </div>
 
@@ -78,6 +86,7 @@ const Login: React.FC = () => {
             onChange={(e) => setPassword(e.target.value)}
             required
             placeholder="Enter your password"
+            autoComplete="current-password"
           />
         </div>
 
