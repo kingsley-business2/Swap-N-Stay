@@ -26,6 +26,7 @@ const AuthRedirect: React.FC = () => {
     }
 
     // User is logged in and has profile - redirect based on tier/admin status
+    // Use the tier from your actual profile data
     const tier = profile.tier;
 
     if (isAdmin) {
