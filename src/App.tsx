@@ -12,6 +12,11 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import UserSetup from './pages/UserSetup';
 import ErrorPage from './pages/ErrorPage';
+// Import new admin components
+import AdminUsers from './pages/admin/AdminUsers';
+import AdminAds from './pages/admin/AdminAds';
+import AdminTiers from './pages/admin/AdminTiers';
+import AdminReports from './pages/admin/AdminReports';
 
 const App: React.FC = () => {
   const { loading, authChecked } = useAuth();
@@ -33,7 +38,7 @@ const App: React.FC = () => {
       <Route path="/error" element={<BaseLayout><ErrorPage /></BaseLayout>} />
       <Route path="/user-setup" element={<BaseLayout><UserSetup /></BaseLayout>} />
       
-      {/* ✅ FIXED: AuthRedirect routes FIRST */}
+      {/* Auth Redirect Routes */}
       <Route path="/auth-redirect" element={<AuthRedirect />} />
       <Route path="/" element={<AuthRedirect />} />
 
@@ -43,6 +48,12 @@ const App: React.FC = () => {
         <Route path="explore" element={<Explore />} />
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="admin" element={<AdminDashboard />} />
+        
+        {/* New Admin Sub-routes */}
+        <Route path="admin/users" element={<AdminUsers />} />
+        <Route path="admin/ads" element={<AdminAds />} />
+        <Route path="admin/tiers" element={<AdminTiers />} />
+        <Route path="admin/reports" element={<AdminReports />} />
       </Route>
       
       {/* Catch-all 404 */}
