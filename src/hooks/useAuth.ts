@@ -8,6 +8,14 @@ interface Profile {
   username: string;
   tier: 'free' | 'premium' | 'gold';
   is_admin: boolean;
+  // Your actual database fields
+  email?: string;
+  name?: string | null;
+  phone?: string | null;
+  monthly_post_value?: string;
+  account_created_at?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export const useAuth = () => {
@@ -69,6 +77,7 @@ export const useAuth = () => {
         // Create profile for new user if needed
         await createProfile(userId);
       } else {
+        console.log('Profile fetched successfully:', data);
         setProfile(data);
       }
     } catch (error) {
