@@ -66,22 +66,25 @@ export const useAuth = () => {
 
   const fetchProfile = async (userId: string) => {
     try {
+      console.log('🔄 Fetching profile for user:', userId);
+      
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
         .single();
 
+      console.log('📊 Profile fetch result:', { data, error });
+
       if (error) {
-        console.log('Profile not found, might be new user:', error.message);
-        // Create profile for new user if needed
+        console.log('❌ Profile not found, creating new one...');
         await createProfile(userId);
       } else {
-        console.log('Profile fetched successfully:', data);
+        console.log('✅ Profile found:', data);
         setProfile(data);
       }
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      console.error('💥 Profile fetch error:', error);
     } finally {
       setLoading(false);
       setAuthChecked(true);
@@ -90,26 +93,69 @@ export const useAuth = () => {
 
   const createProfile = async (userId: string) => {
     try {
+      console.log('🔄 Creating profile for new user:', userId);
+      
+      // Get user email to create a better username
+      const { data: userData } = await supabase.auth.getUser();
+      const userEmail = userData.user?.email || 'user';
+      const baseUsername = userEmail.split('@')[0] || `user_${userId.slice(0, 8)}`;
+      
       const { data, error } = await supabase
         .from('profiles')
         .insert([
           {
             id: userId,
-            username: `user_${userId.slice(0, 8)}`,
+            username: baseUsername,
+            email: userEmail,
             tier: 'free',
-            is_admin: false
+            is_admin: false,
+            monthly_post_value: '0',
+            account_created_at: new Date().toISOString(),
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
           }
         ])
         .select()
         .single();
 
       if (error) {
-        console.error('Error creating profile:', error);
+        console.error('❌ Profile creation failed:', error);
+        
+        // If username exists, try with a unique suffix
+        if (error.code === '23505') {
+          const uniqueUsername = `${baseUsername}_${userId.slice(0, 4)}`;
+          const { data: retryData, error: retryError } = await supabase
+            .from('profiles')
+            .insert([
+              {
+                id: userId,
+                username: uniqueUsername,
+                email: userEmail,
+                tier: 'free',
+                is_admin: false,
+                monthly_post_value: '0',
+                account_created_at: new Date().toISOString(),
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              }
+            ])
+            .select()
+            .single();
+            
+          if (retryError) {
+            console.error('❌ Retry also failed:', retryError);
+            return;
+          }
+          console.log('✅ Profile created with unique username:', uniqueUsername);
+          setProfile(retryData);
+          return;
+        }
       } else {
+        console.log('✅ Profile created successfully:', data);
         setProfile(data);
       }
     } catch (error) {
-      console.error('Error in profile creation:', error);
+      console.error('💥 Profile creation error:', error);
     }
   };
 
