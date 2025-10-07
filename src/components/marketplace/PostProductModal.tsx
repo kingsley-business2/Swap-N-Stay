@@ -6,7 +6,6 @@ import { uploadFile } from '../../utils/storage';
 import { supabase } from '../../api/supabase';
 import toast from 'react-hot-toast';
 
-// ⚠️ ACTION REQUIRED: Confirm this UUID exists in your Supabase 'categories' table.
 const CROPS_CATEGORY_ID = 'a49973d6-6060-405b-a752-c5aad4b2fd17';
 
 const PostProductModal: React.FC = () => {
@@ -28,11 +27,7 @@ const PostProductModal: React.FC = () => {
       return;
     }
 
-    if (tier === 'free') {
-        toast.error('Upgrade to Premium or Gold to post products.');
-        return;
-    }
-
+    // ✅ REMOVED: Free tier blocking - let Supabase enforce limits
     setIsPosting(true);
     let imageUrl: string = '';
 
@@ -44,7 +39,7 @@ const PostProductModal: React.FC = () => {
       const publicUrl = `${supabase.storage.from('product-images').getPublicUrl(path).data.publicUrl}`;
       imageUrl = publicUrl;
       
-      // 2. Insert the product data
+      // 2. Insert the product data - Supabase will enforce tier limits
       const { error } = await supabase.from('products').insert({
         user_id: user.id,
         category_id: CROPS_CATEGORY_ID, 
@@ -111,7 +106,7 @@ const PostProductModal: React.FC = () => {
             <button 
               type="submit" 
               className={`btn btn-primary ${isPosting ? 'loading' : ''}`}
-              disabled={isPosting || !tier || tier === 'free'}
+              disabled={isPosting || !tier} // ✅ REMOVED: tier === 'free'
             >
               {isPosting ? 'Posting...' : 'Post Product'}
             </button>
