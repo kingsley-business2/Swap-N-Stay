@@ -10,7 +10,7 @@ import Explore from './pages/Explore';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
-import UserSetup from './pages/UserSetup'; // ✅ Import new component
+import UserSetup from './pages/UserSetup';
 import ErrorPage from './pages/ErrorPage';
 
 const App: React.FC = () => {
@@ -31,12 +31,10 @@ const App: React.FC = () => {
       <Route path="/login" element={<BaseLayout><Login /></BaseLayout>} />
       <Route path="/signup" element={<BaseLayout><Signup /></BaseLayout>} />
       <Route path="/error" element={<BaseLayout><ErrorPage /></BaseLayout>} />
-      <Route path="/user-setup" element={<BaseLayout><UserSetup /></BaseLayout>} /> {/* ✅ New route */}
+      <Route path="/user-setup" element={<BaseLayout><UserSetup /></BaseLayout>} />
       
-      {/* Auth Redirect Route */}
+      {/* ✅ FIXED: AuthRedirect routes FIRST */}
       <Route path="/auth-redirect" element={<AuthRedirect />} />
-      
-      {/* Root path redirects to auth flow */}
       <Route path="/" element={<AuthRedirect />} />
 
       {/* Protected Routes - Wrapped in BaseLayout */}
