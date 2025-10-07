@@ -8,7 +8,11 @@ import toast from 'react-hot-toast';
 
 const CROPS_CATEGORY_ID = 'a49973d6-6060-405b-a752-c5aad4b2fd17';
 
-const PostProductModal: React.FC = () => {
+interface PostProductModalProps {
+  onPostSuccess?: () => void;
+}
+
+const PostProductModal: React.FC<PostProductModalProps> = ({ onPostSuccess }) => {
   const { user, isAuthenticated } = useAuth();
   const tier = useTierLimits(user?.id || null);
 
@@ -52,6 +56,13 @@ const PostProductModal: React.FC = () => {
       if (error) throw error;
 
       toast.success('Product posted successfully!');
+      
+      // Call the success callback if provided
+      if (onPostSuccess) {
+        onPostSuccess();
+      }
+      
+      // Reset form
       setName('');
       setDescription('');
       setPrice(0);
@@ -106,7 +117,7 @@ const PostProductModal: React.FC = () => {
             <button 
               type="submit" 
               className={`btn btn-primary ${isPosting ? 'loading' : ''}`}
-              disabled={isPosting || !tier} // ✅ REMOVED: tier === 'free'
+              disabled={isPosting || !tier}
             >
               {isPosting ? 'Posting...' : 'Post Product'}
             </button>
