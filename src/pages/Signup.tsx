@@ -7,14 +7,25 @@ import toast from 'react-hot-toast';
 const Signup: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email || !password) {
+    if (!email || !password || !confirmPassword) {
       toast.error('Please fill in all fields');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      toast.error('Passwords do not match');
+      return;
+    }
+
+    if (password.length < 6) {
+      toast.error('Password must be at least 6 characters');
       return;
     }
 
@@ -24,10 +35,13 @@ const Signup: React.FC = () => {
       console.log('Starting signup...');
       
       const { data: authData, error: authError } = await supabase.auth.signUp({
-        email,
+        email: email.trim().toLowerCase(),
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          data: {
+            email: email.trim().toLowerCase()
+          }
         }
       });
 
@@ -38,15 +52,15 @@ const Signup: React.FC = () => {
         return;
       }
 
-      // Check if email confirmation is required
+      // Check if user already exists
       if (authData.user && authData.user.identities?.length === 0) {
-        toast.error('User already exists');
+        toast.error('An account with this email already exists');
         return;
       }
 
       if (authData.user) {
         if (authData.session) {
-          // User is immediately logged in (if email confirmations are disabled)
+          // User is immediately logged in
           toast.success('Account created successfully! Welcome!');
           navigate('/auth-redirect');
         } else {
@@ -78,6 +92,7 @@ const Signup: React.FC = () => {
             onChange={(e) => setEmail(e.target.value)}
             required
             placeholder="Enter your email"
+            autoComplete="email"
           />
         </div>
 
@@ -93,6 +108,23 @@ const Signup: React.FC = () => {
             required
             placeholder="Enter your password"
             minLength={6}
+            autoComplete="new-password"
+          />
+        </div>
+
+        <div>
+          <label className="label">
+            <span className="label-text">Confirm Password</span>
+          </label>
+          <input
+            type="password"
+            className="input input-bordered w-full"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+            placeholder="Confirm your password"
+            minLength={6}
+            autoComplete="new-password"
           />
         </div>
 
