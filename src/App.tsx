@@ -10,13 +10,13 @@ import Explore from './pages/Explore';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
-import SetupProfile from './pages/SetupProfile'; // ✅ Import actual component
+import UserSetup from './pages/UserSetup'; // ✅ Import new component
 import ErrorPage from './pages/ErrorPage';
 
 const App: React.FC = () => {
-  const { loading, authChecked } = useAuth(); // ✅ Add authChecked
+  const { loading, authChecked } = useAuth();
 
-  // ✅ Wait for auth to be fully checked
+  // Wait for auth to be fully checked
   if (loading || !authChecked) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -31,20 +31,20 @@ const App: React.FC = () => {
       <Route path="/login" element={<BaseLayout><Login /></BaseLayout>} />
       <Route path="/signup" element={<BaseLayout><Signup /></BaseLayout>} />
       <Route path="/error" element={<BaseLayout><ErrorPage /></BaseLayout>} />
-      <Route path="/setup-profile" element={<BaseLayout><SetupProfile /></BaseLayout>} /> {/* ✅ Use actual component */}
+      <Route path="/user-setup" element={<BaseLayout><UserSetup /></BaseLayout>} /> {/* ✅ New route */}
       
       {/* Auth Redirect Route */}
-      <Route path="/auth-redirect" element={<AuthRedirect />} /> {/* ✅ Add this route */}
+      <Route path="/auth-redirect" element={<AuthRedirect />} />
       
       {/* Root path redirects to auth flow */}
-      <Route path="/" element={<AuthRedirect />} /> {/* ✅ This will handle initial redirect */}
+      <Route path="/" element={<AuthRedirect />} />
 
       {/* Protected Routes - Wrapped in BaseLayout */}
       <Route path="/" element={<BaseLayout />}>
-        <Route path="marketplace" element={<Marketplace />} /> {/* ✅ Fixed path */}
-        <Route path="explore" element={<Explore />} /> {/* ✅ Fixed path */}
-        <Route path="dashboard" element={<Dashboard />} /> {/* ✅ Fixed path */}
-        <Route path="admin" element={<AdminDashboard />} /> {/* ✅ Fixed path */}
+        <Route path="marketplace" element={<Marketplace />} />
+        <Route path="explore" element={<Explore />} />
+        <Route path="dashboard" element={<Dashboard />} />
+        <Route path="admin" element={<AdminDashboard />} />
       </Route>
       
       {/* Catch-all 404 */}
