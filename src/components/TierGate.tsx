@@ -10,12 +10,15 @@ const TierGate = ({ children }: { children: React.ReactNode }) => {
 
   if (!user || !tier) return <>{children}</>;
 
+  // ✅ CHANGED: Show info but don't block access
   if (tier === 'free') {
-    toast.error('Upgrade required to access this feature.');
-    return null; 
+    toast('Free tier: Some features may be limited', { 
+      icon: 'ℹ️',
+      duration: 3000 
+    });
   }
 
-  return <>{children}</>;
+  return <>{children}</>; // ✅ REMOVED: Blocking return null
 };
 
 export default TierGate;
