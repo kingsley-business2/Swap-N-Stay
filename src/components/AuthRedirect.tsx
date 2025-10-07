@@ -9,10 +9,13 @@ const AuthRedirect: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    console.log('🔍 AuthRedirect Debug:', { user, profile, isAdmin, loading, authChecked });
+
     // Wait until auth state is fully determined
     if (loading || !authChecked) return;
 
     if (!user) {
+      console.log('❌ No user, redirecting to login');
       toast.error('Please log in to continue.');
       navigate('/login', { replace: true });
       return;
@@ -20,7 +23,7 @@ const AuthRedirect: React.FC = () => {
 
     // User is logged in but profile might be missing
     if (!profile) {
-      console.log('No profile found, redirecting to setup...');
+      console.log('❌ No profile, redirecting to setup');
       toast.error('Please complete your profile setup.');
       navigate('/user-setup', { replace: true });
       return;
@@ -28,12 +31,16 @@ const AuthRedirect: React.FC = () => {
 
     // User is logged in and has profile - redirect based on tier/admin status
     const tier = profile.tier;
+    console.log('✅ User has profile, tier:', tier, 'isAdmin:', isAdmin);
 
     if (isAdmin) {
+      console.log('🚀 Redirecting to /admin');
       navigate('/admin', { replace: true });
     } else if (tier === 'free') {
+      console.log('🚀 Redirecting to /explore');
       navigate('/explore', { replace: true });
     } else if (tier === 'premium' || tier === 'gold') {
+      console.log('🚀 Redirecting to /marketplace');
       navigate('/marketplace', { replace: true });
     } else {
       console.error('Unknown tier:', tier);
