@@ -18,15 +18,15 @@ const AuthRedirect: React.FC = () => {
       return;
     }
 
-    // User is logged in but profile might be loading or missing
+    // User is logged in but profile might be missing
     if (!profile) {
-      console.log('Profile not ready, redirecting to setup...');
-      navigate('/setup-profile', { replace: true });
+      console.log('No profile found, redirecting to setup...');
+      toast.error('Please complete your profile setup.');
+      navigate('/user-setup', { replace: true });
       return;
     }
 
     // User is logged in and has profile - redirect based on tier/admin status
-    // Use the tier from your actual profile data
     const tier = profile.tier;
 
     if (isAdmin) {
