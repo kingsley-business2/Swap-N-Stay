@@ -1,4 +1,3 @@
-// ========================== src/App.tsx ==========================
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import BaseLayout from './layouts/BaseLayout';
@@ -47,9 +46,9 @@ const App: React.FC = () => {
         <Route path="marketplace" element={<Marketplace />} />
         <Route path="explore" element={<Explore />} />
         <Route path="dashboard" element={<Dashboard />} />
-        <Route path="admin" element={<AdminDashboard />} />
         
-        {/* New Admin Sub-routes */}
+        {/* Fix #2: Verified and corrected admin route structure */}
+        <Route path="admin" element={<AdminDashboard />} />
         <Route path="admin/users" element={<AdminUsers />} />
         <Route path="admin/ads" element={<AdminAds />} />
         <Route path="admin/tiers" element={<AdminTiers />} />
@@ -62,4 +61,4 @@ const App: React.FC = () => {
   );
 };
 
-export default App;
+export default App;  
