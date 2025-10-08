@@ -1,28 +1,13 @@
-// ========================== src/hooks/useAuth.ts ==========================
 import { useState, useEffect } from 'react';
 import { supabase } from '../api/supabase';
 import { User } from '@supabase/supabase-js';
-
-interface Profile {
-  id: string;
-  username: string;
-  tier: 'free' | 'premium' | 'gold';
-  is_admin: boolean;
-  // Your actual database fields
-  email?: string;
-  name?: string | null;
-  phone?: string | null;
-  monthly_post_value?: string;
-  account_created_at?: string;
-  created_at?: string;
-  updated_at?: string;
-}
+import { UserProfile } from '../types/custom'; // Assuming UserProfile is imported/defined elsewhere, using the type provided in your prior context
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [authChecked, setAuthChecked] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false); // This is the critical flag
 
   useEffect(() => {
     // Get initial session
@@ -35,7 +20,7 @@ export const useAuth = () => {
           await fetchProfile(session.user.id);
         } else {
           setLoading(false);
-          setAuthChecked(true);
+          setAuthChecked(true); // Set true if no session is found
         }
       } catch (error) {
         console.error('Auth initialization error:', error);
@@ -53,11 +38,12 @@ export const useAuth = () => {
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        await fetchProfile(session.user.id);
+        // Only fetch profile; setAuthChecked will happen inside fetchProfile
+        await fetchProfile(session.user.id); 
       } else {
         setProfile(null);
         setLoading(false);
-        setAuthChecked(true);
+        setAuthChecked(true); // Set true when user logs out
       }
     });
 
@@ -76,18 +62,25 @@ export const useAuth = () => {
 
       console.log('📊 Profile fetch result:', { data, error });
 
-      if (error) {
+      if (error && error.code !== 'PGRST116') { // PGRST116 is 'No rows returned'
         console.log('❌ Profile not found, creating new one...');
         await createProfile(userId);
-      } else {
+      } else if (data) {
         console.log('✅ Profile found:', data);
-        setProfile(data);
+        setProfile(data as UserProfile); // Cast to your expected type
       }
+      
+      // Handle the case where the profile exists but RLS is blocking the view
+      if (!data && error && error.code !== 'PGRST116') {
+        // If there's an RLS block (403), createProfile will handle the error
+      }
+
+
     } catch (error) {
       console.error('💥 Profile fetch error:', error);
     } finally {
       setLoading(false);
-      setAuthChecked(true);
+      setAuthChecked(true); // <-- CRITICAL: Set to true once the profile fetch is done
     }
   };
 
@@ -147,12 +140,12 @@ export const useAuth = () => {
             return;
           }
           console.log('✅ Profile created with unique username:', uniqueUsername);
-          setProfile(retryData);
+          setProfile(retryData as UserProfile);
           return;
         }
       } else {
         console.log('✅ Profile created successfully:', data);
-        setProfile(data);
+        setProfile(data as UserProfile);
       }
     } catch (error) {
       console.error('💥 Profile creation error:', error);
@@ -165,7 +158,7 @@ export const useAuth = () => {
       if (error) {
         console.error('Logout error:', error);
         throw error;
-      }
+      } 
     } catch (error) {
       console.error('Logout failed:', error);
       throw error;
@@ -176,9 +169,10 @@ export const useAuth = () => {
     user,
     profile,
     loading,
-    authChecked,
+    // <<-- EXPOSE authChecked HERE -->
+    authChecked, 
     isAuthenticated: !!user,
     isAdmin: profile?.is_admin || false,
     logout
-  };
+  };    
 };
