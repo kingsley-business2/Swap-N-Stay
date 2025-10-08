@@ -1,20 +1,35 @@
 // ========================== src/components/Header.tsx ==========================
 import React from 'react';
-import { useNavigate } from 'react-router-dom'; // Add this import
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 
 const Header: React.FC = () => {
   const { isAuthenticated, logout, profile } = useAuth();
-  const navigate = useNavigate(); // Initialize the hook
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const handleNavigation = (path: string) => {
-    navigate(path); // Programmatically navigate
+    // Close dropdown by blurring the active element
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+    navigate(path);
+  };
+
+  const handleLogout = async () => {
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+    await logout();
   };
 
   return (
-    <header className="navbar bg-base-100 shadow-md">
+    <header className="navbar bg-base-100 shadow-md sticky top-0 z-50">
       <div className="flex-1">
-        <button onClick={() => handleNavigation('/marketplace')} className="btn btn-ghost text-xl">
+        <button 
+          onClick={() => handleNavigation('/marketplace')}
+          className="btn btn-ghost text-xl hover:bg-base-200 transition-colors"
+        >
           Swap N Stay
         </button>
       </div>
@@ -22,20 +37,48 @@ const Header: React.FC = () => {
         {isAuthenticated ? (
           <div className="dropdown dropdown-end">
             <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
-              <div className="w-10 rounded-full">
-                <img alt="User Avatar" src="https://ui-avatars.com/api/?name=User" />
+              <div className="w-10 rounded-full bg-base-300 flex items-center justify-center">
+                <span className="text-lg">👤</span>
               </div>
             </div>
-            <ul tabIndex={0} className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow">
-              {/* Replace Links with buttons that use the navigation handler */}
-              <li><button onClick={() => handleNavigation('/dashboard')}>Dashboard</button></li>
-              <li><button onClick={() => handleNavigation('/marketplace')}>Marketplace</button></li>
-              {profile?.is_admin && <li><button onClick={() => handleNavigation('/admin')}>Admin Panel</button></li>}
-              <li><button onClick={logout}>Logout</button></li>
+            <ul 
+              tabIndex={0} 
+              className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[100] mt-3 w-52 p-2 shadow-lg border border-base-300"
+            >
+              <li>
+                <button 
+                  onClick={() => handleNavigation('/dashboard')}
+                  className={`w-full text-left ${location.pathname === '/dashboard' ? 'active' : ''}`}
+                >
+                  Dashboard
+                </button>
+              </li>
+              <li>
+                <button 
+                  onClick={() => handleNavigation('/marketplace')}
+                  className={`w-full text-left ${location.pathname === '/marketplace' ? 'active' : ''}`}
+                >
+                  Marketplace
+                </button>
+              </li>
+              {profile?.is_admin && (
+                <li>
+                  <button 
+                    onClick={() => handleNavigation('/admin')}
+                    className={`w-full text-left ${location.pathname === '/admin' ? 'active' : ''}`}
+                  >
+                    Admin Panel
+                  </button>
+                </li>
+              )}
+              <li><button onClick={handleLogout} className="w-full text-left">Logout</button></li>
             </ul>
           </div>
         ) : (
-          <button onClick={() => handleNavigation('/login')} className="btn btn-primary">
+          <button 
+            onClick={() => handleNavigation('/login')}
+            className="btn btn-primary hover:btn-primary-focus transition-colors"
+          >
             Sign In
           </button>
         )}
