@@ -1,4 +1,3 @@
-// ========================== src/pages/Dashboard.tsx ==========================
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../api/supabase';
@@ -6,19 +5,26 @@ import { Link } from 'react-router-dom';
 import PostProductModal from '../components/marketplace/PostProductModal';
 
 const Dashboard: React.FC = () => {
-  const { user, profile } = useAuth();
+  // 1. Destructure 'authChecked' from the hook
+  const { user, profile, authChecked } = useAuth(); 
   const [userProducts, setUserProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [connectionStatus, setConnectionStatus] = useState<string>('testing');
 
   useEffect(() => {
-    if (user) {
+    // 2. CRITICAL FIX: Wait until authChecked is TRUE AND user is available
+    if (authChecked && user) {
       fetchUserData();
-      testConnection(); // Add connection test
+      testConnection(); 
+    } else if (authChecked && !user) {
+      // 3. If auth check is done but no user is found (logged out), stop loading.
+      setLoading(false);
+      setUserProducts([]);
     }
-  }, [user]);
+    // 4. Update the dependency array
+  }, [authChecked, user]); 
 
-  // ADD THIS FUNCTION TO TEST CONNECTION
+  // ADD THIS FUNCTION TO TEST CONNECTION (No change to logic)
   const testConnection = async () => {
     console.log('🔌 Testing Supabase connection...');
     
@@ -52,7 +58,7 @@ const Dashboard: React.FC = () => {
 
   const fetchUserData = async () => {
     try {
-      // Only fetch products (remove user_activities - table doesn't exist)
+      // Only fetch products 
       const { data: products, error } = await supabase
         .from('products')
         .select('*')
@@ -70,22 +76,24 @@ const Dashboard: React.FC = () => {
       console.error('Error in fetchUserData:', error);
       setUserProducts([]);
     } finally {
-      setLoading(false);
+      // We no longer set loading=false here if we are relying on the authChecked state
+      // The logic in the useEffect hook handles the final state change.
     }
   };
 
-  if (loading) {
+  // 5. Update the initial loading check to include authChecked
+  if (loading || !authChecked) { 
     return (
       <div className="p-8 flex justify-center">
         <span className="loading loading-spinner loading-lg"></span>
       </div>
     );
   }
-
+  // ... (rest of the return statement, which has no changes) ...
   return (
     <div className="p-6 space-y-6">
       {/* Connection Status Banner - TEMPORARY */}
-      <div className={`alert ${connectionStatus === 'connected' ? 'alert-success' : connectionStatus === 'failed' ? 'alert-error' : 'alert-warning'}`}>
+      <div className={`alert ${connectionStatus === 'connected' ? 'alert-success' : connectionStatus === 'failed' ? 'alert-error' : connectionStatus === 'error' ? 'alert-warning' : 'alert-info'}`}>
         <span>Database Status: {connectionStatus.toUpperCase()}</span>
       </div>
 
