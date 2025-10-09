@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../api/supabase';
 import { User } from '@supabase/supabase-js';
-import { UserProfile } from '../types/custom'; // Assuming UserProfile is imported/defined elsewhere, using the type provided in your prior context
+import { UserProfile } from '../types/custom'; // Ensure this is the correct path
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [authChecked, setAuthChecked] = useState(false); // This is the critical flag
+  const [authChecked, setAuthChecked] = useState(false); // The critical flag
 
   useEffect(() => {
     // Get initial session
@@ -17,10 +17,13 @@ export const useAuth = () => {
         setUser(session?.user ?? null);
         
         if (session?.user) {
+          // If a session exists, proceed to fetch the profile
           await fetchProfile(session.user.id);
         } else {
+          // No session found initially (logged out state)
+          setProfile(null);
           setLoading(false);
-          setAuthChecked(true); // Set true if no session is found
+          setAuthChecked(true); // Signal that the check is complete
         }
       } catch (error) {
         console.error('Auth initialization error:', error);
@@ -41,9 +44,10 @@ export const useAuth = () => {
         // Only fetch profile; setAuthChecked will happen inside fetchProfile
         await fetchProfile(session.user.id); 
       } else {
+        // User logged out
         setProfile(null);
         setLoading(false);
-        setAuthChecked(true); // Set true when user logs out
+        setAuthChecked(true); // Signal completion when user logs out
       }
     });
 
@@ -60,21 +64,15 @@ export const useAuth = () => {
         .eq('id', userId)
         .single();
 
-      console.log('📊 Profile fetch result:', { data, error });
-
       if (error && error.code !== 'PGRST116') { // PGRST116 is 'No rows returned'
+        // Profile doesn't exist or RLS is blocking read. Try to create profile.
         console.log('❌ Profile not found, creating new one...');
         await createProfile(userId);
       } else if (data) {
-        console.log('✅ Profile found:', data);
-        setProfile(data as UserProfile); // Cast to your expected type
+        // Profile found
+        setProfile(data as UserProfile); 
       }
-      
-      // Handle the case where the profile exists but RLS is blocking the view
-      if (!data && error && error.code !== 'PGRST116') {
-        // If there's an RLS block (403), createProfile will handle the error
-      }
-
+      // If error.code === 'PGRST116' (no row), createProfile will handle it
 
     } catch (error) {
       console.error('💥 Profile fetch error:', error);
@@ -88,7 +86,7 @@ export const useAuth = () => {
     try {
       console.log('🔄 Creating profile for new user:', userId);
       
-      // Get user email to create a better username
+      // Get user email
       const { data: userData } = await supabase.auth.getUser();
       const userEmail = userData.user?.email || 'user';
       const baseUsername = userEmail.split('@')[0] || `user_${userId.slice(0, 8)}`;
@@ -99,10 +97,13 @@ export const useAuth = () => {
           {
             id: userId,
             username: baseUsername,
+            // Consistency Fix: Set 'name' during creation
+            name: baseUsername,
             email: userEmail,
             tier: 'free',
             is_admin: false,
-            monthly_post_value: '0',
+            // Type Fix: Ensure this is a number (0)
+            monthly_post_value: 0, 
             account_created_at: new Date().toISOString(),
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
@@ -114,7 +115,7 @@ export const useAuth = () => {
       if (error) {
         console.error('❌ Profile creation failed:', error);
         
-        // If username exists, try with a unique suffix
+        // Handle unique username constraint
         if (error.code === '23505') {
           const uniqueUsername = `${baseUsername}_${userId.slice(0, 4)}`;
           const { data: retryData, error: retryError } = await supabase
@@ -123,10 +124,11 @@ export const useAuth = () => {
               {
                 id: userId,
                 username: uniqueUsername,
+                name: uniqueUsername, // Consistency Fix: Set 'name'
                 email: userEmail,
                 tier: 'free',
                 is_admin: false,
-                monthly_post_value: '0',
+                monthly_post_value: 0,
                 account_created_at: new Date().toISOString(),
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString()
@@ -169,7 +171,7 @@ export const useAuth = () => {
     user,
     profile,
     loading,
-    // <<-- EXPOSE authChecked HERE -->
+    // <<-- EXPOSED FLAG -->
     authChecked, 
     isAuthenticated: !!user,
     isAdmin: profile?.is_admin || false,
