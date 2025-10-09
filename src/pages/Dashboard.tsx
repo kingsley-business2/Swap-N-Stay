@@ -1,3 +1,4 @@
+// ========================== src/pages/Dashboard.tsx ==========================
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../api/supabase';
@@ -5,60 +6,27 @@ import { Link } from 'react-router-dom';
 import PostProductModal from '../components/marketplace/PostProductModal';
 
 const Dashboard: React.FC = () => {
-  // 1. Destructure 'authChecked' from the hook
   const { user, profile, authChecked } = useAuth(); 
   const [userProducts, setUserProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [connectionStatus, setConnectionStatus] = useState<string>('testing');
+  // Removed connectionStatus state
 
   useEffect(() => {
-    // 2. CRITICAL FIX: Wait until authChecked is TRUE AND user is available
+    // CRITICAL FIX: Wait until authChecked is TRUE AND user is available
     if (authChecked && user) {
       fetchUserData();
-      testConnection(); 
     } else if (authChecked && !user) {
-      // 3. If auth check is done but no user is found (logged out), stop loading.
+      // If auth check is done but no user is found (logged out), stop loading.
       setLoading(false);
       setUserProducts([]);
     }
-    // 4. Update the dependency array
   }, [authChecked, user]); 
 
-  // ADD THIS FUNCTION TO TEST CONNECTION (No change to logic)
-  const testConnection = async () => {
-    console.log('🔌 Testing Supabase connection...');
-    
-    try {
-      // Test 1: Check if we can access profiles
-      const { data: profiles, error: profileError } = await supabase
-        .from('profiles')
-        .select('id, email, tier')
-        .limit(1);
-      console.log('👤 Profiles test:', profiles, profileError);
-      
-      // Test 2: Check if we can access products
-      const { data: products, error: productError } = await supabase
-        .from('products')
-        .select('id, name')
-        .limit(1);
-      console.log('📦 Products test:', products, productError);
-      
-      if (!profileError && !productError) {
-        setConnectionStatus('connected');
-        console.log('✅ Database connection successful!');
-      } else {
-        setConnectionStatus('failed');
-        console.log('❌ Database connection failed');
-      }
-    } catch (error) {
-      setConnectionStatus('error');
-      console.error('💥 Connection test error:', error);
-    }
-  };
+  // Removed testConnection function
 
   const fetchUserData = async () => {
     try {
-      // Only fetch products 
+      // Live fetch of user's own products 
       const { data: products, error } = await supabase
         .from('products')
         .select('*')
@@ -76,12 +44,12 @@ const Dashboard: React.FC = () => {
       console.error('Error in fetchUserData:', error);
       setUserProducts([]);
     } finally {
-      // We no longer set loading=false here if we are relying on the authChecked state
-      // The logic in the useEffect hook handles the final state change.
+      // Set loading to false once data fetch is complete (or failed)
+      setLoading(false);
     }
   };
 
-  // 5. Update the initial loading check to include authChecked
+  // Update the initial loading check to include authChecked
   if (loading || !authChecked) { 
     return (
       <div className="p-8 flex justify-center">
@@ -89,15 +57,12 @@ const Dashboard: React.FC = () => {
       </div>
     );
   }
-  // ... (rest of the return statement, which has no changes) ...
+
+  // Rest of the return statement
   return (
     <div className="p-6 space-y-6">
-      {/* Connection Status Banner - TEMPORARY */}
-      <div className={`alert ${connectionStatus === 'connected' ? 'alert-success' : connectionStatus === 'failed' ? 'alert-error' : connectionStatus === 'error' ? 'alert-warning' : 'alert-info'}`}>
-        <span>Database Status: {connectionStatus.toUpperCase()}</span>
-      </div>
+      {/* Removed Connection Status Banner */}
 
-      {/* Rest of your existing Dashboard UI remains the same */}
       <div className="flex justify-between items-start mb-8">
         <div>
           <h1 className="text-3xl font-bold mb-2">
@@ -121,7 +86,7 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Stats Overview - UPDATED */}
+      {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="card bg-base-200 p-6 text-center">
           <h3 className="text-2xl font-bold mb-2">{userProducts.length}</h3>
@@ -139,7 +104,6 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Rest of your component remains the same... */}
       <PostProductModal onPostSuccess={fetchUserData} />
     </div>
   );
