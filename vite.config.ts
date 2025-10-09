@@ -1,4 +1,4 @@
-// vite.config.ts
+// ========================== vite.config.ts (FINAL UPDATE) ==========================
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
@@ -52,12 +52,13 @@ export default defineConfig({
       }
     }
   },
+  // CRITICAL FIX: Use '0.0.0.0' for mobile development accessibility
   server: {
     port: 3000,
-    host: true
+    host: '0.0.0.0' 
   },
   preview: {
     port: 3000,
-    host: true
+    host: '0.0.0.0'
   }
-})
+});
