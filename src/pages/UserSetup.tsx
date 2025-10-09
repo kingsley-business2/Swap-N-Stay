@@ -1,4 +1,4 @@
-// ========================== src/pages/UserSetup.tsx ==========================
+// ========================== src/pages/UserSetup.tsx (FINAL UPDATE) ==========================
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../api/supabase';
@@ -32,11 +32,14 @@ const UserSetup: React.FC = () => {
       const { error } = await supabase
         .from('profiles')
         .update({
+          // 1. Consistency Fix: Map 'username' to 'name' as well for table completeness
           username: username.trim(),
+          name: username.trim(), 
           phone: phone.trim() || null,
           tier: 'free',
           is_admin: false,
-          monthly_post_value: '0',
+          // 2. Type Fix: Set monthly_post_value as a NUMBER (0) to match 'numeric' type
+          monthly_post_value: 0, 
           updated_at: new Date().toISOString()
         })
         .eq('id', user.id);
@@ -47,7 +50,8 @@ const UserSetup: React.FC = () => {
       }
 
       toast.success('Profile setup complete!');
-      navigate('/auth-redirect'); // Will redirect to appropriate page
+      // Navigate to /auth-redirect to let the component decide the final destination
+      navigate('/auth-redirect'); 
     } catch (error: any) {
       console.error('Setup error:', error);
       toast.error(`Unexpected error: ${error.message}`);
