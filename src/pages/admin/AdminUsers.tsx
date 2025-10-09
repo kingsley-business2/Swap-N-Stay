@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../api/supabase';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { useAuth } from '../../hooks/useAuth'; // Import useAuth
 
 interface UserProfile {
   id: string;
@@ -13,19 +14,29 @@ interface UserProfile {
 }
 
 const AdminUsers: React.FC = () => {
+  // 1. Get authChecked and isAdmin from the hook
+  const { authChecked, isAdmin } = useAuth(); 
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingUserId, setUpdatingUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchUsers();
-  }, []);
+    // 2. CRITICAL FIX: Only run fetchUsers if authChecked is true AND the user is an admin.
+    if (authChecked && isAdmin) {
+      fetchUsers();
+    } else if (authChecked && !isAdmin) {
+      // If auth is done and user is not admin, stop loading.
+      setLoading(false);
+    }
+  }, [authChecked, isAdmin]); // 3. Update dependencies
 
   const fetchUsers = async () => {
+    setLoading(true);
     try {
+      // Live fetch of all profiles (Admin RLS must allow this)
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select('id, email, username, tier, created_at') // Specify columns
         .order('created_at', { ascending: false });
       
       if (error) {
@@ -39,7 +50,7 @@ const AdminUsers: React.FC = () => {
       console.error('Error fetching users:', error);
       toast.error('Failed to load users');
     } finally {
-      setLoading(false);
+      setLoading(false); 
     }
   };
 
@@ -71,9 +82,9 @@ const AdminUsers: React.FC = () => {
       case 'free':
         return 'badge badge-info';
       case 'premium':
-        return 'badge badge-warning';
+        return 'badge badge-success'; // Changed to success for better visibility
       case 'gold':
-        return 'badge badge-success';
+        return 'badge badge-warning'; // Changed to warning for better visibility
       default:
         return 'badge badge-info';
     }
@@ -83,7 +94,8 @@ const AdminUsers: React.FC = () => {
     return tier.charAt(0).toUpperCase() + tier.slice(1);
   };
 
-  if (loading) {
+  // 4. Update the loading check: show spinner until authChecked is true
+  if (loading || !authChecked) { 
     return (
       <div className="p-8 flex justify-center items-center min-h-64">
         <span className="loading loading-spinner loading-lg"></span>
@@ -91,6 +103,21 @@ const AdminUsers: React.FC = () => {
     );
   }
 
+  // 5. Explicitly handle Access Denied case after authChecked is true
+  if (!isAdmin) {
+    return (
+      <div className="p-8">
+        <div className="alert alert-error">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span>Access Denied. Administrator privileges required.</span>
+        </div>
+      </div>
+    );
+  }
+  
+  // The rest of the return statement (table structure) remains the same
   return (
     <div className="p-8">
       <div className="flex items-center gap-4 mb-6">
