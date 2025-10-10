@@ -1,7 +1,7 @@
 // src/context/AuthContext.tsx
 
 import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
-import { supabase } from '../api/supabase'; // Assumed existing file
+import { supabase } from '../api/supabase';
 import { User, UserProfile, LoginCredentials, RegisterCredentials } from '../types/auth'; 
 import { Session } from '@supabase/supabase-js';
 
@@ -59,7 +59,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (profileData) {
       return {
         id: profileData.id,
-        name: profileData.name || '',
+        // Added fallback to empty string and false to prevent crashes if DB data is NULL
+        name: profileData.name || '', 
         tier: profileData.tier || 'free',
         is_admin: profileData.is_admin || false,
       } as UserProfile;
@@ -148,7 +149,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         await supabase.from('profiles').insert({ 
             id: data.user.id, 
             name: credentials.name, 
-            tier: 'free', 
+            tier: 'free', // Confirmed: Must be lowercase 'free'
             is_admin: false 
         });
     }
@@ -170,3 +171,5 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
+
+export const useAuth = () => useContext(AuthContext);
