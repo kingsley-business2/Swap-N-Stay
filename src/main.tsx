@@ -5,10 +5,10 @@ import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext.tsx'; 
 import { Toaster } from 'react-hot-toast'; 
 
-// CRITICAL FIX: Changed the path to resolve the RollupError during build.
-// Using the absolute path '/index.css' is often the most reliable fix 
-// for build environments like Cloudflare Pages/Vite.
-import '/index.css'; 
+// CRITICAL PATH FIX: Trying the "up one directory" path, 
+// which is the last standard path that should resolve index.css 
+// if it is located at the project's root level.
+import '../index.css'; 
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
