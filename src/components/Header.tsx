@@ -1,6 +1,7 @@
+// src/components/Header.tsx
+
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-// 🚨 IMPORT FIX: Importing useAuth directly from context
 import { useAuth } from '../context/AuthContext'; 
 
 const Header: React.FC = () => {
@@ -9,7 +10,6 @@ const Header: React.FC = () => {
   const location = useLocation();
 
   const handleNavigation = (path: string) => {
-    // Attempt to close the dropdown by blurring the focused element
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.blur();
     }
@@ -35,20 +35,19 @@ const Header: React.FC = () => {
       </div>
       
       <div className="flex-none">
-        {/* NEW: Prominent Post Button for all signed-in users */}
+        {/* Updated button text for agricultural marketplace */}
         {isAuthenticated && (
             <button 
                 onClick={() => handleNavigation('/post')}
                 className="btn btn-primary mr-4 hover:btn-primary-focus transition-colors"
             >
-                Post Property
+                Post Goods/Services 
             </button>
         )}
         
         {isAuthenticated ? (
           <div className="dropdown dropdown-end">
             
-            {/* 🎯 Dropdown Toggle Element (Avatar) - Fixed for responsiveness */}
             <div 
               tabIndex={0} 
               role="button" 
@@ -56,14 +55,12 @@ const Header: React.FC = () => {
               aria-label={`User Menu for ${profile?.name || 'User'}`} 
             >
               <div className="w-10 rounded-full bg-base-300 flex items-center justify-center">
-                {/* Display first initial of the user's name, or a generic icon */}
                 <span className="text-lg font-bold text-base-content">
                   {profile?.name ? profile.name.charAt(0).toUpperCase() : '👤'}
                 </span>
               </div>
             </div>
             
-            {/* 📋 Dropdown Content */}
             <ul 
               tabIndex={0} 
               className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[100] mt-3 w-52 p-2 shadow-lg border border-base-300"
@@ -84,7 +81,6 @@ const Header: React.FC = () => {
                   Explore
                 </button>
               </li>
-              {/* Conditional link based on Admin status */}
               {isAdmin && ( 
                 <li>
                   <button 
