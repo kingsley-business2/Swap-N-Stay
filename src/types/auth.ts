@@ -10,8 +10,9 @@ export interface BaseUser {
 export interface UserProfile {
   id: string; // Should match BaseUser id
   name: string;
-  tier: 'free' | 'premium' | 'gold' | 'admin'; // Required by AuthRedirect for logic
-  is_admin: boolean; // Required by AuthRedirect/Header for admin checks
+  // Confirmed to use LOWERCASE tiers to match database value 'free'
+  tier: 'free' | 'premium' | 'gold' | 'admin'; 
+  is_admin: boolean; 
 }
 
 // 3. The combined User structure used by the app's components
