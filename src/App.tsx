@@ -1,8 +1,10 @@
+// src/App.tsx
+
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import BaseLayout from './layouts/BaseLayout';
 import AuthRedirect from './components/AuthRedirect';
-import { useAuth } from './hooks/useAuth'; // Re-import the corrected hook
+import { useAuth } from './hooks/useAuth'; // Use the corrected hook
 import Marketplace from './pages/Marketplace';
 import AdminDashboard from './pages/AdminDashboard';
 import Explore from './pages/Explore';
@@ -17,9 +19,9 @@ import AdminTiers from './pages/admin/AdminTiers';
 import AdminReports from './pages/admin/AdminReports';
 
 const App: React.FC = () => {
-  // CRITICAL FIX: Re-introduced the loading check using the new AuthProvider state
   const { isLoading } = useAuth();
   
+  // CRITICAL FIX: Show loading spinner while the auth state is being determined
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -36,7 +38,7 @@ const App: React.FC = () => {
       <Route path="/error" element={<BaseLayout><ErrorPage /></BaseLayout>} />
       <Route path="/user-setup" element={<BaseLayout><UserSetup /></BaseLayout>} />
       
-      {/* Auth Redirect Routes */}
+      {/* Auth Redirect Routes (handles '/' and redirects based on state) */}
       <Route path="/auth-redirect" element={<AuthRedirect />} />
       <Route path="/" element={<AuthRedirect />} />
 
