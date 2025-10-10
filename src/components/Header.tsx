@@ -1,5 +1,3 @@
-// src/components/Header.tsx (FINALIZED)
-
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
@@ -34,16 +32,27 @@ const Header: React.FC = () => {
           Swap N Stay
         </button>
       </div>
+      
       <div className="flex-none">
+        {/* NEW: Prominent Post Button for all signed-in users */}
+        {isAuthenticated && (
+            <button 
+                onClick={() => handleNavigation('/post')}
+                className="btn btn-primary mr-4 hover:btn-primary-focus transition-colors"
+            >
+                Post Property
+            </button>
+        )}
+        
         {isAuthenticated ? (
           <div className="dropdown dropdown-end">
             
-            {/* 🎯 Dropdown Toggle Element (Avatar) */}
+            {/* 🎯 Dropdown Toggle Element (Avatar) - Fixed for responsiveness */}
             <div 
               tabIndex={0} 
               role="button" 
               className="btn btn-ghost btn-circle avatar"
-              aria-label={`User Menu for ${profile?.name || 'User'}`} // Added accessibility label
+              aria-label={`User Menu for ${profile?.name || 'User'}`} 
             >
               <div className="w-10 rounded-full bg-base-300 flex items-center justify-center">
                 {/* Display first initial of the user's name, or a generic icon */}
@@ -68,7 +77,7 @@ const Header: React.FC = () => {
               </li>
               <li>
                 <button 
-                  onClick={() => handleNavigation('/explore')} // Added /explore link
+                  onClick={() => handleNavigation('/explore')}
                   className={`w-full text-left ${location.pathname === '/explore' ? 'active' : ''}`}
                 >
                   Explore
