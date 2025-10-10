@@ -1,9 +1,8 @@
-// ========================== src/App.tsx (UPDATED) ==========================
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import BaseLayout from './layouts/BaseLayout';
 import AuthRedirect from './components/AuthRedirect';
-// REMOVE: import { useAuth } from './hooks/useAuth'; 
+import { useAuth } from './hooks/useAuth'; // Re-import the corrected hook
 import Marketplace from './pages/Marketplace';
 import AdminDashboard from './pages/AdminDashboard';
 import Explore from './pages/Explore';
@@ -12,24 +11,22 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import UserSetup from './pages/UserSetup';
 import ErrorPage from './pages/ErrorPage';
-// Import new admin components
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminAds from './pages/admin/AdminAds';
 import AdminTiers from './pages/admin/AdminTiers';
 import AdminReports from './pages/admin/AdminReports';
 
 const App: React.FC = () => {
-  // CRITICAL FIX: Removed the logic that was causing the deadlock:
-  /*
-  const { loading, authChecked } = useAuth();
-  if (loading || !authChecked) {
+  // CRITICAL FIX: Re-introduced the loading check using the new AuthProvider state
+  const { isLoading } = useAuth();
+  
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <span className="loading loading-spinner loading-lg"></span>
       </div>
     );
   }
-  */
 
   return (
     <Routes>
