@@ -1,8 +1,9 @@
+// ========================== src/App.tsx (UPDATED) ==========================
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import BaseLayout from './layouts/BaseLayout';
 import AuthRedirect from './components/AuthRedirect';
-import { useAuth } from './hooks/useAuth';
+// REMOVE: import { useAuth } from './hooks/useAuth'; 
 import Marketplace from './pages/Marketplace';
 import AdminDashboard from './pages/AdminDashboard';
 import Explore from './pages/Explore';
@@ -18,9 +19,9 @@ import AdminTiers from './pages/admin/AdminTiers';
 import AdminReports from './pages/admin/AdminReports';
 
 const App: React.FC = () => {
+  // CRITICAL FIX: Removed the logic that was causing the deadlock:
+  /*
   const { loading, authChecked } = useAuth();
-
-  // Wait for auth to be fully checked
   if (loading || !authChecked) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -28,6 +29,7 @@ const App: React.FC = () => {
       </div>
     );
   }
+  */
 
   return (
     <Routes>
@@ -41,13 +43,13 @@ const App: React.FC = () => {
       <Route path="/auth-redirect" element={<AuthRedirect />} />
       <Route path="/" element={<AuthRedirect />} />
 
-      {/* Protected Routes - Wrapped in BaseLayout */}
+      {/* Protected Routes - BaseLayout renders the consistent structure */}
       <Route path="/" element={<BaseLayout />}>
         <Route path="marketplace" element={<Marketplace />} />
         <Route path="explore" element={<Explore />} />
         <Route path="dashboard" element={<Dashboard />} />
         
-        {/* Fix #2: Verified and corrected admin route structure */}
+        {/* Admin Routes */}
         <Route path="admin" element={<AdminDashboard />} />
         <Route path="admin/users" element={<AdminUsers />} />
         <Route path="admin/ads" element={<AdminAds />} />
