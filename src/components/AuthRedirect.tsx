@@ -1,18 +1,20 @@
-// ========================== src/components/AuthRedirect.tsx ==========================
+// src/components/AuthRedirect.tsx
+
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import toast from 'react-hot-toast';
 
 const AuthRedirect: React.FC = () => {
-  const { user, profile, isAdmin, loading, authChecked } = useAuth();
+  // 🌟 CRITICAL: Use the synced property names 🌟
+  const { user, profile, isAdmin, isLoading, isAuthChecked } = useAuth(); 
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.log('🔍 AuthRedirect Debug:', { user, profile, isAdmin, loading, authChecked });
+    console.log('🔍 AuthRedirect Debug:', { user, profile, isAdmin, isLoading, isAuthChecked });
 
     // Wait until auth state is fully determined
-    if (loading || !authChecked) return;
+    if (isLoading || !isAuthChecked) return;
 
     if (!user) {
       console.log('❌ No user, redirecting to login');
@@ -21,7 +23,6 @@ const AuthRedirect: React.FC = () => {
       return;
     }
 
-    // User is logged in but profile might be missing
     if (!profile) {
       console.log('❌ No profile, redirecting to setup');
       toast.error('Please complete your profile setup.');
@@ -29,7 +30,6 @@ const AuthRedirect: React.FC = () => {
       return;
     }
 
-    // User is logged in and has profile - redirect based on tier/admin status
     const tier = profile.tier;
     console.log('✅ User has profile, tier:', tier, 'isAdmin:', isAdmin);
 
@@ -48,10 +48,10 @@ const AuthRedirect: React.FC = () => {
       navigate('/error', { replace: true });
     }
 
-  }, [user, profile, isAdmin, loading, authChecked, navigate]);
+  }, [user, profile, isAdmin, isLoading, isAuthChecked, navigate]);
 
   // Show loading state while checking auth
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <div className="loading loading-spinner loading-lg"></div>
