@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
+// 🚨 IMPORT FIX: Importing useAuth directly from context
+import { useAuth } from '../context/AuthContext'; 
 
 const AuthRedirect: React.FC = () => {
   const { isAuthenticated, isAuthChecked } = useAuth();
