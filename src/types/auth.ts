@@ -1,26 +1,32 @@
 // src/types/auth.ts
-export interface User {
+
+// 1. The base user structure (from Supabase auth.users)
+export interface BaseUser {
   id: string;
   email: string;
-  name: string;
-  role: string;
-  // Add other user properties as needed
 }
 
-export interface AuthCredentials {
+// 2. Separate interface for profile data (from the 'profiles' database table)
+export interface UserProfile {
+  id: string; // Should match BaseUser id
+  name: string;
+  tier: 'free' | 'premium' | 'gold' | 'admin'; // Required by AuthRedirect for logic
+  is_admin: boolean; // Required by AuthRedirect/Header for admin checks
+}
+
+// 3. The combined User structure used by the app's components
+export interface User extends BaseUser {
+    profile: UserProfile | null;
+}
+
+// 4. Credentials for Login and Registration
+export interface LoginCredentials {
   email: string;
   password: string;
 }
 
-export interface LoginResponse {
-  token: string;
-  user: User;
-  expiresIn: number;
-}
-
-export interface RegisterData {
+export interface RegisterCredentials {
   email: string;
   password: string;
   name: string;
-  // Add other registration fields as needed
 }
