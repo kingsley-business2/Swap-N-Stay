@@ -1,4 +1,3 @@
-// ========================== src/components/Header.tsx ==========================
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
@@ -22,6 +21,15 @@ const Header: React.FC = () => {
     }
     await logout();
   };
+  
+  // NEW: Handler to ensure the dropdown button gets focus and opens the menu
+  const handleAvatarClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const target = e.currentTarget;
+    // Forcing focus manually ensures the DaisyUI dropdown CSS is triggered
+    if (target) {
+      target.focus();
+    }
+  };
 
   return (
     <header className="navbar bg-base-100 shadow-md sticky top-0 z-50">
@@ -36,7 +44,12 @@ const Header: React.FC = () => {
       <div className="flex-none">
         {isAuthenticated ? (
           <div className="dropdown dropdown-end">
-            <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
+            <div 
+              tabIndex={0} 
+              role="button" 
+              className="btn btn-ghost btn-circle avatar"
+              onClick={handleAvatarClick} // 🌟 ADDED CLICK HANDLER 🌟
+            >
               <div className="w-10 rounded-full bg-base-300 flex items-center justify-center">
                 <span className="text-lg">👤</span>
               </div>
