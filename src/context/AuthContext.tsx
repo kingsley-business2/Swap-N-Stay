@@ -1,7 +1,7 @@
 // src/context/AuthContext.tsx
 
 import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
-import { supabase } from '../api/supabase';
+import { supabase } from '../api/supabase'; // 🚨 IMPORTANT: Ensure this path is correct
 import { User, UserProfile, LoginCredentials, RegisterCredentials } from '../types/auth'; 
 import { Session } from '@supabase/supabase-js';
 
@@ -172,4 +172,5 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
+// CRITICAL: Export the useAuth hook for components to consume the context
 export const useAuth = () => useContext(AuthContext);
