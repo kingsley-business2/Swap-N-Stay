@@ -10,7 +10,7 @@ export interface BaseUser {
 export interface UserProfile {
   id: string; // Should match BaseUser id
   name: string;
-  // Confirmed to use LOWERCASE tiers to match database value 'free'
+  // Confirmed: Must use LOWERCASE tiers to match database value 'free'
   tier: 'free' | 'premium' | 'gold' | 'admin'; 
   is_admin: boolean; 
 }
