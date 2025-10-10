@@ -1,17 +1,16 @@
-// src/components/Header.tsx
+// src/components/Header.tsx (FINALIZED)
 
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 
 const Header: React.FC = () => {
-  // NOTE: 'profile' is now directly available from useAuth()
   const { isAuthenticated, logout, profile, isAdmin } = useAuth(); 
   const navigate = useNavigate();
   const location = useLocation();
 
   const handleNavigation = (path: string) => {
-    // Close dropdown by blurring the active element
+    // Attempt to close the dropdown by blurring the focused element
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.blur();
     }
@@ -23,14 +22,6 @@ const Header: React.FC = () => {
       document.activeElement.blur();
     }
     await logout();
-  };
-  
-  // Handler to ensure the dropdown button gets focus and opens the menu
-  const handleAvatarClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    const target = e.currentTarget;
-    if (target) {
-      target.focus();
-    }
   };
 
   return (
@@ -46,16 +37,23 @@ const Header: React.FC = () => {
       <div className="flex-none">
         {isAuthenticated ? (
           <div className="dropdown dropdown-end">
+            
+            {/* 🎯 Dropdown Toggle Element (Avatar) */}
             <div 
               tabIndex={0} 
               role="button" 
               className="btn btn-ghost btn-circle avatar"
-              onClick={handleAvatarClick} // ADDED CLICK HANDLER 
+              aria-label={`User Menu for ${profile?.name || 'User'}`} // Added accessibility label
             >
               <div className="w-10 rounded-full bg-base-300 flex items-center justify-center">
-                <span className="text-lg">👤</span>
+                {/* Display first initial of the user's name, or a generic icon */}
+                <span className="text-lg font-bold text-base-content">
+                  {profile?.name ? profile.name.charAt(0).toUpperCase() : '👤'}
+                </span>
               </div>
             </div>
+            
+            {/* 📋 Dropdown Content */}
             <ul 
               tabIndex={0} 
               className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[100] mt-3 w-52 p-2 shadow-lg border border-base-300"
@@ -70,18 +68,18 @@ const Header: React.FC = () => {
               </li>
               <li>
                 <button 
-                  onClick={() => handleNavigation('/marketplace')}
-                  className={`w-full text-left ${location.pathname === '/marketplace' ? 'active' : ''}`}
+                  onClick={() => handleNavigation('/explore')} // Added /explore link
+                  className={`w-full text-left ${location.pathname === '/explore' ? 'active' : ''}`}
                 >
-                  Marketplace
+                  Explore
                 </button>
               </li>
-              {/* Check against the isAdmin prop */}
+              {/* Conditional link based on Admin status */}
               {isAdmin && ( 
                 <li>
                   <button 
                     onClick={() => handleNavigation('/admin')}
-                    className={`w-full text-left ${location.pathname === '/admin' ? 'active' : ''}`}
+                    className={`w-full text-left ${location.pathname.startsWith('/admin') ? 'active' : ''}`}
                   >
                     Admin Panel
                   </button>
