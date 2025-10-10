@@ -1,11 +1,10 @@
 // src/context/AuthContext.tsx
 
 import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
-import { supabase } from '../api/supabase'; // 🚨 IMPORTANT: Ensure this path is correct
+import { supabase } from '../api/supabase'; // 🚨 VERIFY: This path must be correct
 import { User, UserProfile, LoginCredentials, RegisterCredentials } from '../types/auth'; 
 import { Session } from '@supabase/supabase-js';
 
-// Define the shape of the authentication context
 interface AuthContextType {
   user: User | null;
   profile: UserProfile | null;
@@ -18,7 +17,6 @@ interface AuthContextType {
   register: (credentials: RegisterCredentials) => Promise<void>;
 }
 
-// Initial context state
 const initialAuthContext: AuthContextType = {
   user: null,
   profile: null,
@@ -43,7 +41,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthChecked, setIsAuthChecked] = useState(false);
   
-  // Helper to fetch custom profile data from your 'profiles' table
   const fetchProfile = async (userId: string): Promise<UserProfile | null> => {
     const { data: profileData, error } = await supabase
       .from('profiles')
@@ -51,7 +48,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       .eq('id', userId)
       .single();
 
-    if (error && error.code !== 'PGRST116') { // PGRST116 means 'No rows found'
+    if (error && error.code !== 'PGRST116') {
       console.error('Error fetching profile:', error);
       return null;
     }
@@ -59,7 +56,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (profileData) {
       return {
         id: profileData.id,
-        // Added fallback to empty string and false to prevent crashes if DB data is NULL
         name: profileData.name || '', 
         tier: profileData.tier || 'free',
         is_admin: profileData.is_admin || false,
@@ -68,24 +64,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return null;
   };
 
-  // Main effect for Supabase auth state management
   useEffect(() => {
     const handleSession = async (currentSession: Session | null) => {
       setIsLoading(true);
       
       if (currentSession?.user) {
-        // 1. Set Base User
         const baseUser: User = { id: currentSession.user.id, email: currentSession.user.email || '', profile: null };
         setUser(baseUser);
         
-        // 2. Fetch Profile
         const userProfile = await fetchProfile(currentSession.user.id);
         setProfile(userProfile);
         
-        // 3. Update combined User state
         setUser(prev => ({ ...prev!, profile: userProfile }));
       } else {
-        // User is signed out
         setUser(null);
         setProfile(null);
       }
@@ -94,30 +85,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsAuthChecked(true);
     };
 
-    // Listen for auth changes
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, currentSession) => {
-        // We only process the session if it changes meaningfully or on initial load
         if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
             handleSession(currentSession);
         }
       }
     );
 
-    // Run initial check (in case listener is slow)
     supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
         if (!isAuthChecked) {
             handleSession(initialSession);
         }
     });
 
-    // Cleanup the listener on unmount
     return () => {
       authListener.subscription.unsubscribe();
     };
   }, []);
 
-  // Authentication methods (uses Supabase client)
   const login = async (credentials: LoginCredentials) => {
     setIsLoading(true);
     const { error } = await supabase.auth.signInWithPassword(credentials);
@@ -145,11 +131,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
 
     if (data.user) {
-        // Create initial profile record after successful auth user creation
         await supabase.from('profiles').insert({ 
             id: data.user.id, 
             name: credentials.name, 
-            tier: 'free', // Confirmed: Must be lowercase 'free'
+            tier: 'free',
             is_admin: false 
         });
     }
@@ -172,5 +157,4 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-// CRITICAL: Export the useAuth hook for components to consume the context
 export const useAuth = () => useContext(AuthContext);
