@@ -1,9 +1,12 @@
+// src/components/Header.tsx
+
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 
 const Header: React.FC = () => {
-  const { isAuthenticated, logout, profile } = useAuth();
+  // NOTE: 'profile' is now directly available from useAuth()
+  const { isAuthenticated, logout, profile, isAdmin } = useAuth(); 
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -22,10 +25,9 @@ const Header: React.FC = () => {
     await logout();
   };
   
-  // NEW: Handler to ensure the dropdown button gets focus and opens the menu
+  // Handler to ensure the dropdown button gets focus and opens the menu
   const handleAvatarClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const target = e.currentTarget;
-    // Forcing focus manually ensures the DaisyUI dropdown CSS is triggered
     if (target) {
       target.focus();
     }
@@ -48,7 +50,7 @@ const Header: React.FC = () => {
               tabIndex={0} 
               role="button" 
               className="btn btn-ghost btn-circle avatar"
-              onClick={handleAvatarClick} // 🌟 ADDED CLICK HANDLER 🌟
+              onClick={handleAvatarClick} // ADDED CLICK HANDLER 
             >
               <div className="w-10 rounded-full bg-base-300 flex items-center justify-center">
                 <span className="text-lg">👤</span>
@@ -74,7 +76,8 @@ const Header: React.FC = () => {
                   Marketplace
                 </button>
               </li>
-              {profile?.is_admin && (
+              {/* Check against the isAdmin prop */}
+              {isAdmin && ( 
                 <li>
                   <button 
                     onClick={() => handleNavigation('/admin')}
