@@ -17,16 +17,11 @@ import AdminUsers from './pages/admin/AdminUsers';
 import AdminAds from './pages/admin/AdminAds';
 import AdminTiers from './pages/admin/AdminTiers';
 import AdminReports from './pages/admin/AdminReports';
-
-// 🚨 CRITICAL: New imports required to fix 404
 import PostGoods from './pages/PostGoods'; 
-// If you were using a separate hook file, you must delete it or update this line:
-// import { useAuth } from './hooks/useAuth'; // <-- REMOVE THIS IF YOU WERE USING IT
 
 const App: React.FC = () => {
   const { isLoading, isAuthChecked } = useAuth();
   
-  // Show loading spinner only while the initial auth check is incomplete
   if (isLoading || !isAuthChecked) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -37,26 +32,27 @@ const App: React.FC = () => {
 
   return (
     <Routes>
-      {/* 1. Public Routes (Do not require BaseLayout or auth check) */}
+      {/* 1. Public Routes (Wrapped in BaseLayout) */}
       <Route path="/login" element={<BaseLayout><Login /></BaseLayout>} />
       <Route path="/signup" element={<BaseLayout><Signup /></BaseLayout>} />
       <Route path="/error" element={<BaseLayout><ErrorPage /></BaseLayout>} />
       <Route path="/user-setup" element={<BaseLayout><UserSetup /></BaseLayout>} />
       
       {/* 2. Root/Initial Route Handler */}
-      <Route path="/" element={<AuthRedirect />} />
+      {/* This route catches the initial load and sends users to the correct page based on auth status. */}
+      <Route path="/" element={<AuthRedirect />} /> 
 
-      {/* 3. Main Application Routes (wrapped in BaseLayout for header/footer) */}
+      {/* 3. Main Application Routes (Wrapped in BaseLayout for header/footer) */}
+      {/* All subsequent routes use the BaseLayout */}
       <Route path="/" element={<BaseLayout />}>
-        {/* Redirect from root index, ensuring all navigation lands on marketplace */}
+        
+        {/* If a user somehow lands on the root '/' while authenticated, redirect them */}
         <Route index element={<Navigate to="/marketplace" replace />} />
         
         {/* User Routes */}
         <Route path="marketplace" element={<Marketplace />} />
         <Route path="explore" element={<Explore />} />
         <Route path="dashboard" element={<Dashboard />} />
-        
-        {/* 🚨 FIX: The required route to render the posting page */}
         <Route path="post" element={<PostGoods />} /> 
 
         {/* Admin Routes */}
