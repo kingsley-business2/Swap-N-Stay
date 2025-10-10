@@ -9,9 +9,14 @@ const AuthRedirect: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Only act once the auth state is definitively known
     if (isAuthChecked) {
       if (isAuthenticated) {
+        // Redirect to the /marketplace route, which is the landing page
         navigate('/marketplace', { replace: true }); 
+      } else {
+        // If not authenticated, ensure they go to the login page (in case they landed on '/')
+        navigate('/login', { replace: true });
       }
     }
   }, [isAuthenticated, isAuthChecked, navigate]);
