@@ -1,5 +1,5 @@
 // ========================== src/components/Footer.tsx ==========================
-import React from 'react';
+// Removed: import React from 'react';
 
 const Footer = () => (
   <footer className="footer p-4 bg-base-200 text-base-content text-center">
