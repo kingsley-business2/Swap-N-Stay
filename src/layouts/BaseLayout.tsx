@@ -1,14 +1,22 @@
-// ========================== src/layouts/BaseLayout.tsx ==========================
+// src/layouts/BaseLayout.tsx
+
 import React from 'react';
+import { Outlet } from 'react-router-dom'; // CRITICAL: Import Outlet
 import Footer from '../components/Footer';
 import Header from '../components/Header';
 import AdBanner from '../components/AdBanner';
 
-const BaseLayout = ({ children }: { children: React.ReactNode }) => (
+// FIX: Remove the explicit 'children' prop from the function signature
+const BaseLayout: React.FC = () => (
   <div className="flex flex-col min-h-screen">
     <Header />
     <AdBanner />
-    <main className="flex-grow p-4">{children}</main>
+    
+    {/* CRITICAL FIX: Use <Outlet /> to render the nested route content */}
+    <main className="flex-grow p-4">
+        <Outlet /> 
+    </main>
+    
     <Footer />
   </div>
 );
