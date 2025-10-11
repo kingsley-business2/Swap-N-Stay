@@ -32,9 +32,8 @@ const PostGoods: React.FC = () => {
         
         try {
             // 1. Upload Media to Supabase Storage
-            // NOTE: Using a hypothetical 'goods_media' bucket for consistency/reliability
             const { error: uploadError } = await supabase.storage
-                .from('goods_media') // Make sure this bucket exists
+                .from('goods_media') // Make sure this bucket exists and has RLS policies
                 .upload(fileName, mediaFile);
 
             if (uploadError) throw uploadError;
@@ -47,9 +46,9 @@ const PostGoods: React.FC = () => {
             const mediaUrl = publicURLData.publicUrl;
 
             // 3. Save Listing Metadata
-            // CRITICAL FIX: Ensure all values are correctly typed and non-null before inserting
             const priceValue = typeof price === 'string' && price.trim() !== '' ? parseFloat(price) : 0;
             
+            // NOTE: Using 'listings' table, which was confirmed to exist
             const { error: dbError } = await supabase.from('listings').insert({
                 user_id: user.id,
                 title: title.trim(),
@@ -59,7 +58,6 @@ const PostGoods: React.FC = () => {
             });
 
             if (dbError) {
-                // If insertion fails, log and throw a specific error
                 console.error("Database Insertion Failed:", dbError);
                 throw new Error("Failed to create listing record in the database.");
             }
@@ -70,7 +68,6 @@ const PostGoods: React.FC = () => {
 
         } catch (error: any) {
             console.error('Posting error:', error);
-            // Provide better error messages
             toast.error(`Posting failed: ${error.message || 'Check browser console for details.'}`);
         } finally {
             setIsSubmitting(false);
@@ -112,7 +109,7 @@ const PostGoods: React.FC = () => {
                 </div>
 
                 <div className="form-control max-w-xs">
-                    {/* CURRENCY FIX */}
+                    {/* CURRENCY FIX: Ghana Cedis (GHC) */}
                     <label className="label"><span className="label-text">Price (GHC)</span></label>
                     <input
                         type="number"
