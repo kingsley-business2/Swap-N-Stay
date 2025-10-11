@@ -2,38 +2,41 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../api/supabase';
 import toast from 'react-hot-toast';
-import { Product } from '../types/custom'; // Assuming Product is correctly defined here
-import { useAuth } from '../context/AuthContext'; // Import useAuth to check the tier
+// CRITICAL FIX: Import and use the simplified type for display
+import { ProductSummary } from '../types/custom'; 
+import { useAuth } from '../context/AuthContext'; 
 
+// Use the simplified type for state
 const Explore: React.FC = () => {
-  const [curatedProducts, setCuratedProducts] = useState<Product[]>([]);
+  const [curatedProducts, setCuratedProducts] = useState<ProductSummary[]>([]);
   const [loading, setLoading] = useState(true);
-  // Get the profile to conditionally display messages/logic
   const { profile } = useAuth(); 
   const isFreeTier = profile?.tier === 'free';
   
   // Define the limit based on the tier (6 for free, higher for premium/gold)
-  const productLimit = isFreeTier ? 6 : 50; // Example: 6 for free, 50 for full access
+  const productLimit = isFreeTier ? 6 : 50; 
 
   useEffect(() => {
     fetchCuratedProducts();
-  }, [profile?.tier]); // Re-run fetch if the user's tier changes
+  }, [profile?.tier]); 
 
   const fetchCuratedProducts = async () => {
     setLoading(true);
     try {
-      // The limit is now dynamically determined
+      // The select statement is correct for the data we want to display
       const { data, error } = await supabase
-        .from('products') // NOTE: Using 'products' table, ensure this matches your DB structure
-        .select('id, name, description') // Select necessary fields
+        .from('products') 
+        .select('id, name, description') // Selects fields that match ProductSummary
         .order('created_at', { ascending: false })
-        .limit(productLimit); // Apply the tier-based limit
+        .limit(productLimit); 
 
       if (error) {
         throw error;
       }
 
-      setCuratedProducts(data || []);
+      // CRITICAL FIX: The fetched data now matches ProductSummary,
+      // resolving the TS2345 error.
+      setCuratedProducts(data as ProductSummary[] || []); 
     } catch (error: any) {
       console.error('Error fetching products:', error);
       toast.error(`Failed to load products: ${error.message || 'Check RLS rules.'}`);
@@ -55,7 +58,6 @@ const Explore: React.FC = () => {
     <div className="p-4">
       <h1 className="text-3xl font-bold mb-4">Explore Products</h1>
       
-      {/* CRITICAL TEXT CHANGE */}
       {isFreeTier ? (
           <div className="alert alert-warning mb-8">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24">
