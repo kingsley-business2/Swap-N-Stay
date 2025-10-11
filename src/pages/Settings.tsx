@@ -11,17 +11,16 @@ const Settings: React.FC = () => {
   // Initialize state with current profile data
   const [name, setName] = useState(profile?.name || '');
   const [username, setUsername] = useState(profile?.username || '');
-  const [phone, setPhone] = useState(profile?.phone_number || ''); // Assuming 'phone_number' column
-  const [dob, setDob] = useState(profile?.date_of_birth || '');   // Assuming 'date_of_birth' column
-  const [location, setLocation] = useState(profile?.location || ''); // Assuming 'location' column
+  // CRITICAL FIX: Use the correct column names from the updated UserProfile
+  const [phone, setPhone] = useState(profile?.phone_number || ''); 
+  const [dob, setDob] = useState(profile?.date_of_birth || '');   
+  const [location, setLocation] = useState(profile?.location || ''); 
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // If profile data loads later (e.g., in a race condition), update the state
     if (profile) {
       setName(profile.name || '');
       setUsername(profile.username || '');
-      // Ensure date formats match the input type="date" if fetching from DB
       setPhone(profile.phone_number || ''); 
       setDob(profile.date_of_birth || '');   
       setLocation(profile.location || '');
@@ -46,6 +45,7 @@ const Settings: React.FC = () => {
         .update({
           name: name.trim(),
           username: username.trim(),
+          // CRITICAL FIX: Ensure the keys match the database columns
           phone_number: phone.trim() || null, 
           date_of_birth: dob || null, 
           location: location.trim() || null, 
@@ -55,7 +55,7 @@ const Settings: React.FC = () => {
       if (error) throw error;
 
       toast.success('Profile updated successfully!');
-      // A full solution would trigger an update/refresh of the AuthContext profile data here.
+      // NOTE: A full solution would trigger a refresh of the AuthContext profile data here.
 
     } catch (error: any) {
       console.error('Profile update error:', error);
