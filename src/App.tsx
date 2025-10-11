@@ -2,6 +2,7 @@
 
 import { Routes, Route, Navigate } from 'react-router-dom';
 import BaseLayout from './layouts/BaseLayout';
+// ... (All other page and component imports)
 import AuthRedirect from './components/AuthRedirect';
 import { useAuth } from './context/AuthContext'; 
 import Marketplace from './pages/Marketplace';
@@ -17,8 +18,6 @@ import AdminAds from './pages/admin/AdminAds';
 import AdminTiers from './pages/admin/AdminTiers';
 import AdminReports from './pages/admin/AdminReports';
 import PostGoods from './pages/PostGoods'; 
-// FIX: Ensure 'React' is not imported if unused (if a component is not defined inline, this line should be removed)
-// If the original file had `import React from 'react';` and it was unused, remove it. 
 
 // Component for 404 content
 const NotFoundContent = () => (
@@ -44,7 +43,8 @@ const App = () => {
       
       <Route path="/" element={<AuthRedirect />} /> 
 
-      <Route path="/" element={<BaseLayout />}>
+      {/* The children are implicitly handled by BaseLayout's <Outlet /> */}
+      <Route path="/" element={<BaseLayout />}> 
         
         <Route path="login" element={<Login />} />
         <Route path="signup" element={<Signup />} />
