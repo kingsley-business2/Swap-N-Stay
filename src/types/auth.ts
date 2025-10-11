@@ -2,13 +2,12 @@
 
 // NOTE: UserProfile definition has been moved/consolidated into src/types/custom.ts.
 // CRITICAL FIX: Use 'export type' to comply with isolatedModules setting (TS1205 fix)
-export type { UserProfile } from './custom'; // <-- CHANGED TO 'export type'
+export type { UserProfile } from './custom'; 
 
 export interface User {
     id: string;
     email: string;
-    // CRITICAL FIX: Since we are using 'export type', we need to re-import it here 
-    // if other interfaces in this file rely on it, which the interface 'User' does.
+    // UserProfile is imported as a type, so it's accessible here.
     profile: UserProfile | null; 
 }
 
