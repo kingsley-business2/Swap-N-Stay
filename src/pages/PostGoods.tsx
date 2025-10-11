@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { supabase } from '../api/supabase';
-import { useAuth } from '../context/AuthContext'; // Assuming correct path
+import { useAuth } from '../context/AuthContext'; 
 import toast from 'react-hot-toast';
 
 const PostGoods: React.FC = () => {
@@ -32,29 +32,37 @@ const PostGoods: React.FC = () => {
         
         try {
             // 1. Upload Media to Supabase Storage
+            // NOTE: Using a hypothetical 'goods_media' bucket for consistency/reliability
             const { error: uploadError } = await supabase.storage
-                .from('listings_media') // IMPORTANT: Ensure this bucket exists in Supabase
+                .from('goods_media') // Make sure this bucket exists
                 .upload(fileName, mediaFile);
 
             if (uploadError) throw uploadError;
 
             // 2. Get Public URL
             const { data: publicURLData } = supabase.storage
-                .from('listings_media')
+                .from('goods_media')
                 .getPublicUrl(fileName);
 
             const mediaUrl = publicURLData.publicUrl;
 
             // 3. Save Listing Metadata
+            // CRITICAL FIX: Ensure all values are correctly typed and non-null before inserting
+            const priceValue = typeof price === 'string' && price.trim() !== '' ? parseFloat(price) : 0;
+            
             const { error: dbError } = await supabase.from('listings').insert({
                 user_id: user.id,
-                title,
-                description,
-                price: typeof price === 'string' && price.trim() !== '' ? parseFloat(price) : 0,
+                title: title.trim(),
+                description: description.trim(),
+                price: priceValue,
                 media_url: mediaUrl,
             });
 
-            if (dbError) throw dbError;
+            if (dbError) {
+                // If insertion fails, log and throw a specific error
+                console.error("Database Insertion Failed:", dbError);
+                throw new Error("Failed to create listing record in the database.");
+            }
 
             toast.success("Listing posted successfully!");
             // Reset form
@@ -62,7 +70,8 @@ const PostGoods: React.FC = () => {
 
         } catch (error: any) {
             console.error('Posting error:', error);
-            toast.error(`Failed to post listing: ${error.message}`);
+            // Provide better error messages
+            toast.error(`Posting failed: ${error.message || 'Check browser console for details.'}`);
         } finally {
             setIsSubmitting(false);
         }
@@ -103,10 +112,11 @@ const PostGoods: React.FC = () => {
                 </div>
 
                 <div className="form-control max-w-xs">
-                    <label className="label"><span className="label-text">Price (Optional)</span></label>
+                    {/* CURRENCY FIX */}
+                    <label className="label"><span className="label-text">Price (GHC)</span></label>
                     <input
                         type="number"
-                        placeholder="e.g., 50.00"
+                        placeholder="e.g., 50.00 GHC"
                         value={price}
                         onChange={(e) => setPrice(e.target.value)}
                         className="input input-bordered w-full"
