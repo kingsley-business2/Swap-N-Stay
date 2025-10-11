@@ -22,9 +22,7 @@ const Upgrade: React.FC = () => {
         setLoadingTier(newTier);
 
         try {
-            // MOCK: In a real app, this would involve a payment gateway (Stripe/Paystack)
-            // Then, upon successful payment, you update the profile tier.
-
+            // MOCK: In a a real app, successful payment would precede this DB update.
             const { error } = await supabase
                 .from('profiles')
                 .update({ tier: newTier })
@@ -33,7 +31,7 @@ const Upgrade: React.FC = () => {
             if (error) throw error;
 
             toast.success(`Successfully upgraded to ${newTier.toUpperCase()}!`);
-            // Refreshing the page or AuthContext is needed to update the displayed tier
+            // NOTE: A full solution would trigger a refresh of the AuthContext profile data here.
 
         } catch (error: any) {
             console.error('Upgrade error:', error);
