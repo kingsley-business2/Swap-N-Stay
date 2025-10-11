@@ -2,33 +2,19 @@
 
 import { createContext, useState, useEffect, useContext, ReactNode } from 'react';
 import { supabase } from '../api/supabase';
+// CRITICAL FIX: Rely solely on the imported types. 
+// User, UserProfile, LoginCredentials, RegisterCredentials must be fully defined and exported from '../types/auth'.
 import { User, UserProfile, LoginCredentials, RegisterCredentials } from '../types/auth'; 
 import { Session } from '@supabase/supabase-js';
 
-// --- Assuming these are your core types/auth exports ---
-// NOTE: These internal declarations ensure type safety for this file.
-interface UserProfile {
-  id: string;
-  name: string;
-  tier: 'free' | 'premium' | 'gold';
-  is_admin: boolean;
-  username?: string; // CRITICAL FIX: Added optional username for Dashboard/AdminUsers
-}
-
-interface User {
-    id: string;
-    email: string;
-    profile: UserProfile | null;
-}
-// -----------------------------------------------------
-
+// Define AuthContextType relying on imported User/UserProfile
 interface AuthContextType {
   user: User | null;
   profile: UserProfile | null;
   isAuthenticated: boolean;
   isAdmin: boolean;
   isLoading: boolean;
-  isAuthChecked: boolean; // CRITICAL FIX: Standardized name to isAuthChecked
+  isAuthChecked: boolean; // Standardized name
   login: (credentials: LoginCredentials) => Promise<void>;
   logout: () => Promise<void>;
   register: (credentials: RegisterCredentials) => Promise<void>;
@@ -40,7 +26,7 @@ const initialAuthContext: AuthContextType = {
   isAuthenticated: false,
   isAdmin: false,
   isLoading: true,
-  isAuthChecked: false, // CRITICAL FIX: Standardized name
+  isAuthChecked: false, // Standardized name
   login: () => Promise.resolve(),
   logout: () => Promise.resolve(),
   register: () => Promise.resolve(),
@@ -61,7 +47,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const fetchProfile = async (userId: string): Promise<UserProfile | null> => {
     const { data: profileData, error } = await supabase
       .from('profiles')
-      .select('id, name, tier, is_admin, username') // Added username here if it exists in DB
+      // Ensure 'username' is selected if it exists in your DB schema
+      .select('id, name, tier, is_admin, username') 
       .eq('id', userId)
       .single();
     
@@ -71,13 +58,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
 
     if (profileData) {
-      return {
-        id: profileData.id,
-        name: profileData.name || '', 
-        tier: profileData.tier || 'free',
-        is_admin: profileData.is_admin || false,
-        username: profileData.username || undefined, // Include username
-      };
+      // Cast the fetched data to UserProfile as expected by the caller
+      return profileData as UserProfile;
     }
     return null;
   };
@@ -89,6 +71,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         if (currentSession?.user) {
             const userProfile = await fetchProfile(currentSession.user.id);
             
+            // Build the User object using the imported type structure
             const fullUser: User = { 
                 id: currentSession.user.id, 
                 email: currentSession.user.email || '', 
@@ -158,7 +141,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             name: credentials.name, 
             tier: 'free',
             is_admin: false,
-            username: credentials.name, // Assuming name is used as initial username
+            // Assuming name is used as initial username for the profile setup
+            username: credentials.name, 
         });
     }
     
