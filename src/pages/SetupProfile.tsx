@@ -1,21 +1,30 @@
-// ========================== src/pages/SetupProfile.tsx ==========================
+// src/pages/SetupProfile.tsx
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../api/supabase';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../context/AuthContext'; // CORRECTED HOOK PATH
 import toast from 'react-hot-toast';
 
 const SetupProfile: React.FC = () => {
-  const [username, setUsername] = useState('');
-  const [loading, setLoading] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
+
+  // State for all required fields
+  const [name, setName] = useState('');
+  const [username, setUsername] = useState('');
+  const [phone, setPhone] = useState('');
+  const [dob, setDob] = useState('');
+  const [location, setLocation] = useState('');
+  const [loading, setLoading] = useState(false);
+  
+  // NOTE: If you need to fetch existing profile data here, add a useEffect hook.
 
   const handleSetup = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!username.trim()) {
-      toast.error('Please enter a username');
+    if (!username.trim() || !name.trim()) {
+      toast.error('Name and Username are required');
       return;
     }
 
@@ -31,7 +40,14 @@ const SetupProfile: React.FC = () => {
       const { error } = await supabase
         .from('profiles')
         .update({
+          // Fields to be updated
+          name: name.trim(),
           username: username.trim(),
+          phone_number: phone.trim() || null, // Assuming 'phone_number' column in profiles
+          date_of_birth: dob || null,         // Assuming 'date_of_birth' column in profiles
+          location: location.trim() || null,  // Assuming 'location' column in profiles
+          
+          // Initial default fields (already in the table, but ensuring completeness)
           tier: 'free',
           is_admin: false
         })
@@ -43,7 +59,8 @@ const SetupProfile: React.FC = () => {
       }
 
       toast.success('Profile setup complete!');
-      navigate('/auth-redirect'); // Will redirect to appropriate page based on tier
+      // After setup, redirect to a safe page. AuthContext should handle refresh.
+      navigate('/dashboard'); 
     } catch (error: any) {
       console.error('Profile setup error:', error);
       toast.error(`Unexpected error: ${error.message}`);
@@ -53,13 +70,26 @@ const SetupProfile: React.FC = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto p-6 bg-base-100 shadow-xl rounded-lg">
-      <h2 className="text-2xl font-bold mb-4">Complete Your Profile</h2>
+    <div className="max-w-md mx-auto p-6 bg-base-100 shadow-xl rounded-lg mt-10">
+      <h2 className="text-3xl font-bold mb-6">Complete Your Profile Details</h2>
       <form onSubmit={handleSetup} className="space-y-4">
-        <div>
-          <label className="label">
-            <span className="label-text">Username</span>
-          </label>
+        
+        {/* Name Input */}
+        <div className="form-control">
+          <label className="label"><span className="label-text">Full Name</span></label>
+          <input
+            type="text"
+            className="input input-bordered w-full"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+            placeholder="Enter your full name"
+          />
+        </div>
+
+        {/* Username Input (Existing) */}
+        <div className="form-control">
+          <label className="label"><span className="label-text">Username</span></label>
           <input
             type="text"
             className="input input-bordered w-full"
@@ -72,12 +102,52 @@ const SetupProfile: React.FC = () => {
           />
         </div>
 
+        {/* Phone Number */}
+        <div className="form-control">
+          <label className="label"><span className="label-text">Phone Number (Optional)</span></label>
+          <input
+            type="tel"
+            className="input input-bordered w-full"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="e.g., +233 55 123 4567"
+          />
+        </div>
+
+        {/* Date of Birth */}
+        <div className="form-control">
+          <label className="label"><span className="label-text">Date of Birth (Optional)</span></label>
+          <input
+            type="date"
+            className="input input-bordered w-full"
+            value={dob}
+            onChange={(e) => setDob(e.target.value)}
+          />
+        </div>
+
+        {/* Location */}
+        <div className="form-control">
+          <label className="label"><span className="label-text">Location (Optional)</span></label>
+          <input
+            type="text"
+            className="input input-bordered w-full"
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+            placeholder="City, Country"
+          />
+        </div>
+
         <button 
           type="submit" 
-          className={`btn btn-primary w-full ${loading ? 'loading' : ''}`}
+          className={`btn btn-primary w-full mt-6`}
           disabled={loading}
         >
-          {loading ? 'Setting Up...' : 'Complete Setup'}
+          {loading ? (
+            <>
+              <span className="loading loading-spinner"></span>
+              Saving Details...
+            </>
+          ) : 'Save and Continue to Dashboard'}
         </button>
       </form>
     </div>
