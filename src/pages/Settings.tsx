@@ -1,13 +1,155 @@
-// src/pages/Settings.tsx (Create this new file)
-import React from 'react';
-const Settings: React.FC = () => (
-    <div className="p-8 max-w-xl mx-auto"><h1 className="text-3xl font-bold">Account Settings</h1><p>Edit your profile details here.</p></div>
-);
-export default Settings;
+// src/pages/Settings.tsx
 
-// src/pages/Upgrade.tsx (Create this new file)
-import React from 'react';
-const Upgrade: React.FC = () => (
-    <div className="p-8 max-w-xl mx-auto"><h1 className="text-3xl font-bold">Upgrade Your Tier</h1><p>Choose a premium plan for full access.</p></div>
-);
-export default Upgrade;
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../api/supabase';
+import { useAuth } from '../context/AuthContext'; 
+import toast from 'react-hot-toast';
+
+const Settings: React.FC = () => {
+  const { user, profile } = useAuth();
+  
+  // Initialize state with current profile data
+  const [name, setName] = useState(profile?.name || '');
+  const [username, setUsername] = useState(profile?.username || '');
+  const [phone, setPhone] = useState(profile?.phone_number || ''); // Assuming 'phone_number' column
+  const [dob, setDob] = useState(profile?.date_of_birth || '');   // Assuming 'date_of_birth' column
+  const [location, setLocation] = useState(profile?.location || ''); // Assuming 'location' column
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    // If profile data loads later (e.g., in a race condition), update the state
+    if (profile) {
+      setName(profile.name || '');
+      setUsername(profile.username || '');
+      // Ensure date formats match the input type="date" if fetching from DB
+      setPhone(profile.phone_number || ''); 
+      setDob(profile.date_of_birth || '');   
+      setLocation(profile.location || '');
+    }
+  }, [profile]);
+
+  const handleUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!username.trim() || !name.trim()) {
+      toast.error('Name and Username are required');
+      return;
+    }
+
+    if (!user) return toast.error('User not logged in.');
+
+    setLoading(true);
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          name: name.trim(),
+          username: username.trim(),
+          phone_number: phone.trim() || null, 
+          date_of_birth: dob || null, 
+          location: location.trim() || null, 
+        })
+        .eq('id', user.id);
+
+      if (error) throw error;
+
+      toast.success('Profile updated successfully!');
+      // A full solution would trigger an update/refresh of the AuthContext profile data here.
+
+    } catch (error: any) {
+      console.error('Profile update error:', error);
+      toast.error(`Update failed: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="p-8 max-w-lg mx-auto">
+        <h1 className="text-3xl font-bold mb-6">Account Settings</h1>
+        
+        <form onSubmit={handleUpdate} className="space-y-4 bg-base-100 p-6 rounded-lg shadow-xl">
+            
+            <p className="text-sm text-base-content/70">Update your public and private profile information.</p>
+
+            {/* Full Name */}
+            <div className="form-control">
+                <label className="label"><span className="label-text">Full Name</span></label>
+                <input
+                    type="text"
+                    className="input input-bordered w-full"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                    placeholder="Enter your full name"
+                />
+            </div>
+
+            {/* Username */}
+            <div className="form-control">
+                <label className="label"><span className="label-text">Username</span></label>
+                <input
+                    type="text"
+                    className="input input-bordered w-full"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    required
+                    placeholder="Choose a username"
+                    minLength={3}
+                />
+            </div>
+
+            {/* Phone Number */}
+            <div className="form-control">
+                <label className="label"><span className="label-text">Phone Number</span></label>
+                <input
+                    type="tel"
+                    className="input input-bordered w-full"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="e.g., +233 55 123 4567"
+                />
+            </div>
+
+            {/* Date of Birth */}
+            <div className="form-control">
+                <label className="label"><span className="label-text">Date of Birth</span></label>
+                <input
+                    type="date"
+                    className="input input-bordered w-full"
+                    value={dob}
+                    onChange={(e) => setDob(e.target.value)}
+                />
+            </div>
+
+            {/* Location */}
+            <div className="form-control">
+                <label className="label"><span className="label-text">Location</span></label>
+                <input
+                    type="text"
+                    className="input input-bordered w-full"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    placeholder="City, Country"
+                />
+            </div>
+
+            <button 
+                type="submit" 
+                className="btn btn-primary w-full mt-6"
+                disabled={loading}
+            >
+                {loading ? (
+                    <>
+                        <span className="loading loading-spinner"></span>
+                        Saving Changes...
+                    </>
+                ) : 'Save Changes'}
+            </button>
+        </form>
+    </div>
+  );
+};
+
+export default Settings;
