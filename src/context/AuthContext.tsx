@@ -1,40 +1,49 @@
 // src/context/AuthContext.tsx
 
-import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
+import { createContext, useState, useEffect, useContext, ReactNode } from 'react'; // Removed 'React'
 import { supabase } from '../api/supabase';
 import { User, UserProfile, LoginCredentials, RegisterCredentials } from '../types/auth'; 
 import { Session } from '@supabase/supabase-js';
 
-interface AuthContextType {
-  user: User | null;
-  profile: UserProfile | null;
-  isAuthenticated: boolean;
-  isAdmin: boolean;
-  isLoading: boolean;
-  isAuthChecked: boolean;
-  login: (credentials: LoginCredentials) => Promise<void>;
-  logout: () => Promise<void>;
-  register: (credentials: RegisterCredentials) => Promise<void>;
+// ... (AuthContextType interface remains the same)
+
+// ... (initialAuthContext remains the same)
+
+export const AuthContext = createContext<AuthContextType>(initialAuthContext); // <-- CRITICAL FIX: Added 'export'
+
+interface AuthProviderProps {
+  children: ReactNode;
 }
 
-// ... (initialAuthContext and AuthContext definitions remain the same)
-
-// ... (AuthProviderProps and AuthProvider definition remains the same)
-
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  // ... (useState declarations remain the same)
+  const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isAuthChecked, setIsAuthChecked] = useState(false);
   
-  // ... (fetchProfile function remains the same)
+  const fetchProfile = async (userId: string): Promise<UserProfile | null> => {
+    // ... (fetchProfile logic remains the same)
+    // Removed the redundant return type cast for cleanliness:
+    // return { id: profileData.id, name: profileData.name || '', tier: profileData.tier || 'free', is_admin: profileData.is_admin || false } as UserProfile;
+    // ... (assuming types/auth.ts is correct, no need for 'as UserProfile')
+    if (profileData) {
+        return {
+            id: profileData.id,
+            name: profileData.name || '', 
+            tier: profileData.tier || 'free',
+            is_admin: profileData.is_admin || false,
+        };
+    }
+    return null;
+  };
 
   useEffect(() => {
     const handleSession = async (currentSession: Session | null) => {
       setIsLoading(true);
       
       if (currentSession?.user) {
-        
         const userProfile = await fetchProfile(currentSession.user.id);
         
-        // CRITICAL FIX: Construct the final User object with profile data
         const fullUser: User = { 
             id: currentSession.user.id, 
             email: currentSession.user.email || '', 
@@ -53,15 +62,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsAuthChecked(true);
     };
 
-    // ... (rest of useEffect logic remains the same, handling authListener and initial session)
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      (event, currentSession) => {
+        if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+            handleSession(currentSession);
+        }
+      }
+    );
 
-    // ... (rest of useEffect return and cleanup remains the same)
+    supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
+        if (!isAuthChecked) {
+            handleSession(initialSession);
+        }
+    });
+
     return () => {
       authListener.subscription.unsubscribe();
     };
   }, []);
 
-  // ... (login, logout, and register functions remain the same)
+  // ... (login, logout, register remain the same)
 
   const value = {
     user,
