@@ -1,13 +1,15 @@
 // src/types/auth.ts
 
-// NOTE: UserProfile definition is in src/types/custom.ts.
-// CRITICAL FIX: Export UserProfile so it can be imported via './types/auth'.
-export { UserProfile } from './custom'; 
+// NOTE: UserProfile definition has been moved/consolidated into src/types/custom.ts.
+// CRITICAL FIX: Use 'export type' to comply with isolatedModules setting (TS1205 fix)
+export type { UserProfile } from './custom'; // <-- CHANGED TO 'export type'
 
 export interface User {
     id: string;
     email: string;
-    profile: UserProfile | null; // Uses the comprehensive profile type
+    // CRITICAL FIX: Since we are using 'export type', we need to re-import it here 
+    // if other interfaces in this file rely on it, which the interface 'User' does.
+    profile: UserProfile | null; 
 }
 
 export interface LoginCredentials {
