@@ -1,12 +1,13 @@
 // src/types/auth.ts
 
-// NOTE: UserProfile definition has been moved/consolidated into src/types/custom.ts.
-import { UserProfile } from './custom'; // Import the consolidated type
+// NOTE: UserProfile definition is in src/types/custom.ts.
+// CRITICAL FIX: Export UserProfile so it can be imported via './types/auth'.
+export { UserProfile } from './custom'; 
 
 export interface User {
     id: string;
     email: string;
-    profile: UserProfile | null; // Use the comprehensive profile type
+    profile: UserProfile | null; // Uses the comprehensive profile type
 }
 
 export interface LoginCredentials {
