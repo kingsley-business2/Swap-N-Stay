@@ -3,14 +3,12 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
-import { UserProfile } from '../types/auth'; // Ensure this type is available
+import { UserProfile } from '../types/auth'; // Ensure UserProfile is imported
 
 const Dashboard: React.FC = () => {
-  // FIX: Change 'authChecked' to 'isAuthChecked'
   const { user, profile, isAuthChecked, isLoading } = useAuth();
   const [activeTab, setActiveTab] = useState<'profile' | 'listings'>('profile');
 
-  // Show loading state until authentication check is complete
   if (isLoading || !isAuthChecked) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -19,7 +17,6 @@ const Dashboard: React.FC = () => {
     );
   }
 
-  // Fallback for unauthenticated users (though AuthRedirect should handle this)
   if (!user) {
     return (
       <div className="p-8">
@@ -56,7 +53,8 @@ const Dashboard: React.FC = () => {
         </div>
         <div>
           <p className="font-semibold">Username:</p>
-          <p className="text-gray-600">{userProfile?.username || userProfile?.name || 'N/A'}</p>
+          {/* FIX CHECK: This access is now valid because username is in UserProfile type */}
+          <p className="text-gray-600">{userProfile?.username || userProfile?.name || 'N/A'}</p> 
         </div>
         <div>
           <p className="font-semibold">Account Tier:</p>
@@ -101,7 +99,6 @@ const Dashboard: React.FC = () => {
     <div className="p-8 max-w-4xl mx-auto">
       <h1 className="text-3xl font-bold mb-6">Welcome back, {userProfile?.name || 'User'}!</h1>
 
-      {/* Tabs */}
       <div className="tabs">
         <a 
           className={`tab tab-lifted ${activeTab === 'profile' ? 'tab-active' : ''}`}
@@ -118,7 +115,6 @@ const Dashboard: React.FC = () => {
         <div className="tab flex-grow cursor-default"></div>
       </div>
 
-      {/* Content */}
       <div className="mt-4">
         {activeTab === 'profile' && renderProfileTab()}
         {activeTab === 'listings' && renderListingsTab()}
