@@ -1,110 +1,128 @@
-// ========================== src/pages/Dashboard.tsx ==========================
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../hooks/useAuth';
-import { supabase } from '../api/supabase';
+// src/pages/Dashboard.tsx
+
+import React, { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
-import PostProductModal from '../components/marketplace/PostProductModal';
+import { UserProfile } from '../types/auth'; // Ensure this type is available
 
 const Dashboard: React.FC = () => {
-  const { user, profile, authChecked } = useAuth(); 
-  const [userProducts, setUserProducts] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  // Removed connectionStatus state
+  // FIX: Change 'authChecked' to 'isAuthChecked'
+  const { user, profile, isAuthChecked, isLoading } = useAuth();
+  const [activeTab, setActiveTab] = useState<'profile' | 'listings'>('profile');
 
-  useEffect(() => {
-    // CRITICAL FIX: Wait until authChecked is TRUE AND user is available
-    if (authChecked && user) {
-      fetchUserData();
-    } else if (authChecked && !user) {
-      // If auth check is done but no user is found (logged out), stop loading.
-      setLoading(false);
-      setUserProducts([]);
-    }
-  }, [authChecked, user]); 
-
-  // Removed testConnection function
-
-  const fetchUserData = async () => {
-    try {
-      // Live fetch of user's own products 
-      const { data: products, error } = await supabase
-        .from('products')
-        .select('*')
-        .eq('user_id', user?.id)
-        .order('created_at', { ascending: false })
-        .limit(5);
-
-      if (error) {
-        console.error('Error fetching products:', error);
-        setUserProducts([]);
-      } else {
-        setUserProducts(products || []);
-      }
-    } catch (error) {
-      console.error('Error in fetchUserData:', error);
-      setUserProducts([]);
-    } finally {
-      // Set loading to false once data fetch is complete (or failed)
-      setLoading(false);
-    }
-  };
-
-  // Update the initial loading check to include authChecked
-  if (loading || !authChecked) { 
+  // Show loading state until authentication check is complete
+  if (isLoading || !isAuthChecked) {
     return (
-      <div className="p-8 flex justify-center">
-        <span className="loading loading-spinner loading-lg"></span>
+      <div className="flex items-center justify-center min-h-screen">
+        <span className="loading loading-spinner loading-lg text-primary"></span>
       </div>
     );
   }
 
-  // Rest of the return statement
-  return (
-    <div className="p-6 space-y-6">
-      {/* Removed Connection Status Banner */}
+  // Fallback for unauthenticated users (though AuthRedirect should handle this)
+  if (!user) {
+    return (
+      <div className="p-8">
+        <div className="alert alert-warning">
+          <span>Please log in to view your dashboard.</span>
+        </div>
+      </div>
+    );
+  }
+  
+  const userProfile: UserProfile | null = profile;
 
-      <div className="flex justify-between items-start mb-8">
+  const getTierBadgeClass = (tier: string) => {
+    switch (tier) {
+      case 'free':
+        return 'badge badge-info';
+      case 'premium':
+        return 'badge badge-success';
+      case 'gold':
+        return 'badge badge-warning';
+      default:
+        return 'badge badge-info';
+    }
+  };
+
+  const renderProfileTab = () => (
+    <div className="p-6 bg-base-100 rounded-box shadow-lg">
+      <h3 className="text-xl font-bold mb-4">User Profile</h3>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <h1 className="text-3xl font-bold mb-2">
-            Welcome Back, {profile?.username || 'User'}!
-          </h1>
-          <div className={`badge badge-lg capitalize ${profile?.tier === 'gold' ? 'badge-warning' : profile?.tier === 'premium' ? 'badge-success' : 'badge-info'}`}>
-            {profile?.tier} Tier
-          </div>
+          <p className="font-semibold">Email:</p>
+          <p className="text-gray-600">{user.email}</p>
         </div>
-        
-        <div className="flex gap-4">
-          <button 
-            className="btn btn-primary"
-            onClick={() => (document.getElementById('post_product_modal') as HTMLDialogElement)?.showModal()}
-          >
-            + Post New Product
-          </button>
-          <Link to="/marketplace" className="btn btn-outline">
-            Browse Marketplace
+        <div>
+          <p className="font-semibold">Username:</p>
+          <p className="text-gray-600">{userProfile?.username || userProfile?.name || 'N/A'}</p>
+        </div>
+        <div>
+          <p className="font-semibold">Account Tier:</p>
+          <span className={getTierBadgeClass(userProfile?.tier || 'free')}>
+            {userProfile?.tier.toUpperCase() || 'FREE'}
+          </span>
+        </div>
+        <div>
+          <p className="font-semibold">Administrator Status:</p>
+          <span className={`badge ${userProfile?.is_admin ? 'badge-error' : 'badge-ghost'}`}>
+            {userProfile?.is_admin ? 'ADMIN' : 'User'}
+          </span>
+        </div>
+      </div>
+
+      <div className="mt-6 flex gap-4">
+        {userProfile?.tier !== 'gold' && (
+          <Link to="/upgrade" className="btn btn-primary">
+            Upgrade Tier
           </Link>
-        </div>
+        )}
+        <Link to="/settings" className="btn btn-ghost">
+          Edit Profile
+        </Link>
+      </div>
+    </div>
+  );
+
+  const renderListingsTab = () => (
+    <div className="p-6 bg-base-100 rounded-box shadow-lg">
+      <h3 className="text-xl font-bold mb-4">My Listings</h3>
+      <div className="alert alert-info">
+        <span>You have no active listings yet.</span>
+      </div>
+      <Link to="/post" className="btn btn-secondary mt-4">
+        Post a New Listing
+      </Link>
+    </div>
+  );
+
+  return (
+    <div className="p-8 max-w-4xl mx-auto">
+      <h1 className="text-3xl font-bold mb-6">Welcome back, {userProfile?.name || 'User'}!</h1>
+
+      {/* Tabs */}
+      <div className="tabs">
+        <a 
+          className={`tab tab-lifted ${activeTab === 'profile' ? 'tab-active' : ''}`}
+          onClick={() => setActiveTab('profile')}
+        >
+          Profile Overview
+        </a>
+        <a 
+          className={`tab tab-lifted ${activeTab === 'listings' ? 'tab-active' : ''}`}
+          onClick={() => setActiveTab('listings')}
+        >
+          My Listings
+        </a>
+        <div className="tab flex-grow cursor-default"></div>
       </div>
 
-      {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="card bg-base-200 p-6 text-center">
-          <h3 className="text-2xl font-bold mb-2">{userProducts.length}</h3>
-          <p className="text-gray-600">Active Products</p>
-        </div>
-        <div className="card bg-base-200 p-6 text-center">
-          <h3 className="text-2xl font-bold mb-2">0</h3>
-          <p className="text-gray-600">Recent Activities</p>
-        </div>
-        <div className="card bg-base-200 p-6 text-center">
-          <h3 className="text-2xl font-bold mb-2">
-            {profile?.tier === 'free' ? '10' : profile?.tier === 'premium' ? '50' : '∞'}
-          </h3>
-          <p className="text-gray-600">Monthly Posts</p>
-        </div>
+      {/* Content */}
+      <div className="mt-4">
+        {activeTab === 'profile' && renderProfileTab()}
+        {activeTab === 'listings' && renderListingsTab()}
       </div>
-
-      <PostProductModal onPostSuccess={fetchUserData} />
     </div>
   );
 };
