@@ -5,34 +5,47 @@ import { supabase } from '../api/supabase';
 import { User, UserProfile, LoginCredentials, RegisterCredentials } from '../types/auth'; 
 import { Session } from '@supabase/supabase-js';
 
-// **1. COMPLETE INTERFACE DEFINITION**
+// --- Assuming these are your core types/auth exports ---
+// NOTE: These internal declarations ensure type safety for this file.
+interface UserProfile {
+  id: string;
+  name: string;
+  tier: 'free' | 'premium' | 'gold';
+  is_admin: boolean;
+  username?: string; // CRITICAL FIX: Added optional username for Dashboard/AdminUsers
+}
+
+interface User {
+    id: string;
+    email: string;
+    profile: UserProfile | null;
+}
+// -----------------------------------------------------
+
 interface AuthContextType {
   user: User | null;
   profile: UserProfile | null;
   isAuthenticated: boolean;
   isAdmin: boolean;
   isLoading: boolean;
-  isAuthChecked: boolean;
+  isAuthChecked: boolean; // CRITICAL FIX: Standardized name to isAuthChecked
   login: (credentials: LoginCredentials) => Promise<void>;
   logout: () => Promise<void>;
   register: (credentials: RegisterCredentials) => Promise<void>;
 }
 
-// **2. COMPLETE INITIAL CONTEXT VALUE**
 const initialAuthContext: AuthContextType = {
   user: null,
   profile: null,
   isAuthenticated: false,
   isAdmin: false,
   isLoading: true,
-  isAuthChecked: false,
-  // Provide dummy functions to satisfy the interface
+  isAuthChecked: false, // CRITICAL FIX: Standardized name
   login: () => Promise.resolve(),
   logout: () => Promise.resolve(),
   register: () => Promise.resolve(),
 };
 
-// **3. CONTEXT CREATION**
 export const AuthContext = createContext<AuthContextType>(initialAuthContext);
 
 interface AuthProviderProps {
@@ -45,11 +58,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthChecked, setIsAuthChecked] = useState(false);
   
-  // CRITICAL FIX: fetchProfile is correctly defined inside to access necessary context/types
   const fetchProfile = async (userId: string): Promise<UserProfile | null> => {
     const { data: profileData, error } = await supabase
       .from('profiles')
-      .select('id, name, tier, is_admin')
+      .select('id, name, tier, is_admin, username') // Added username here if it exists in DB
       .eq('id', userId)
       .single();
     
@@ -64,13 +76,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         name: profileData.name || '', 
         tier: profileData.tier || 'free',
         is_admin: profileData.is_admin || false,
+        username: profileData.username || undefined, // Include username
       };
     }
     return null;
   };
 
   useEffect(() => {
-    // **4. COMPLETE useEffect LOGIC**
     const handleSession = async (currentSession: Session | null) => {
         setIsLoading(true);
         
@@ -112,9 +124,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return () => {
       authListener.subscription.unsubscribe();
     };
-  }, []); // Dependencies are correct
+  }, []);
 
-  // CRITICAL FIX: Login/Logout/Register functions are correctly defined inside the component
   const login = async (credentials: LoginCredentials) => {
     setIsLoading(true);
     const { error } = await supabase.auth.signInWithPassword(credentials);
@@ -146,7 +157,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             id: data.user.id, 
             name: credentials.name, 
             tier: 'free',
-            is_admin: false 
+            is_admin: false,
+            username: credentials.name, // Assuming name is used as initial username
         });
     }
     
@@ -168,5 +180,4 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-// **5. CRITICAL FIX: FINAL EXPORT OF useAuth**
 export const useAuth = () => useContext(AuthContext);
