@@ -19,7 +19,6 @@ import AdminReports from './pages/admin/AdminReports';
 import PostGoods from './pages/PostGoods'; 
 
 // --- NEW IMPORTS FOR MISSING ROUTES ---
-// NOTE: You must create these files in src/pages/
 import Settings from './pages/Settings'; 
 import Upgrade from './pages/Upgrade';
 // -------------------------------------
@@ -65,10 +64,9 @@ const App = () => {
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="post" element={<PostGoods />} /> 
 
-        {/* --- CRITICAL FIX: Add missing routes for Dashboard links --- */}
-        <Route path="settings" element={<Settings />} />     {/* <-- Handles Edit Profile link */}
-        <Route path="upgrade" element={<Upgrade />} />       {/* <-- Handles Upgrade Tier link */}
-        {/* --------------------------------------------------------- */}
+        {/* CRITICAL FIX: Add missing routes for Dashboard links */}
+        <Route path="settings" element={<Settings />} />     
+        <Route path="upgrade" element={<Upgrade />} />       
 
         {/* Admin Routes */}
         <Route path="admin" element={<AdminDashboard />} />
