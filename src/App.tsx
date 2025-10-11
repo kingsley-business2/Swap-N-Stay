@@ -17,9 +17,10 @@ import AdminAds from './pages/admin/AdminAds';
 import AdminTiers from './pages/admin/AdminTiers';
 import AdminReports from './pages/admin/AdminReports';
 import PostGoods from './pages/PostGoods'; 
-import React from 'react'; // Added React import back for JSX usage if needed, though usually not required in modern React.
+// FIX: Ensure 'React' is not imported if unused (if a component is not defined inline, this line should be removed)
+// If the original file had `import React from 'react';` and it was unused, remove it. 
 
-// CRITICAL FIX: Define the 404 content as a proper component.
+// Component for 404 content
 const NotFoundContent = () => (
   <>
     <h1 className="text-4xl font-bold">404: Not Found</h1>
@@ -63,7 +64,6 @@ const App = () => {
         <Route path="admin/tiers" element={<AdminTiers />} />
         <Route path="admin/reports" element={<AdminReports />} />
 
-        {/* FIX: Reference the dedicated component */}
         <Route path="*" element={<NotFoundContent />} />
       </Route>
       
