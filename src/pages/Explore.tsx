@@ -1,9 +1,9 @@
-// ========================== src/pages/Explore.tsx ==========================
+// src/pages/Explore.tsx
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../api/supabase';
 import toast from 'react-hot-toast';
-// CRITICAL FIX: Import and use the simplified type for display
-import { ProductSummary } from '../types/custom'; 
+import { ProductSummary } from '../types/custom'; // CRITICAL FIX: Use simplified type
 import { useAuth } from '../context/AuthContext'; 
 
 // Use the simplified type for state
@@ -13,7 +13,6 @@ const Explore: React.FC = () => {
   const { profile } = useAuth(); 
   const isFreeTier = profile?.tier === 'free';
   
-  // Define the limit based on the tier (6 for free, higher for premium/gold)
   const productLimit = isFreeTier ? 6 : 50; 
 
   useEffect(() => {
@@ -23,10 +22,10 @@ const Explore: React.FC = () => {
   const fetchCuratedProducts = async () => {
     setLoading(true);
     try {
-      // The select statement is correct for the data we want to display
+      // NOTE: Assuming 'products' is the correct table for exploring
       const { data, error } = await supabase
         .from('products') 
-        .select('id, name, description') // Selects fields that match ProductSummary
+        .select('id, name, description') // Fetches ProductSummary fields
         .order('created_at', { ascending: false })
         .limit(productLimit); 
 
@@ -34,8 +33,7 @@ const Explore: React.FC = () => {
         throw error;
       }
 
-      // CRITICAL FIX: The fetched data now matches ProductSummary,
-      // resolving the TS2345 error.
+      // Casting the fetched data to ProductSummary[] resolves the TS2345 error
       setCuratedProducts(data as ProductSummary[] || []); 
     } catch (error: any) {
       console.error('Error fetching products:', error);
@@ -58,6 +56,7 @@ const Explore: React.FC = () => {
     <div className="p-4">
       <h1 className="text-3xl font-bold mb-4">Explore Products</h1>
       
+      {/* CRITICAL TEXT CHANGE */}
       {isFreeTier ? (
           <div className="alert alert-warning mb-8">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24">
