@@ -2,7 +2,6 @@
 
 import { Routes, Route, Navigate } from 'react-router-dom';
 import BaseLayout from './layouts/BaseLayout';
-// ... (All other page and component imports)
 import AuthRedirect from './components/AuthRedirect';
 import { useAuth } from './context/AuthContext'; 
 import Marketplace from './pages/Marketplace';
@@ -18,6 +17,12 @@ import AdminAds from './pages/admin/AdminAds';
 import AdminTiers from './pages/admin/AdminTiers';
 import AdminReports from './pages/admin/AdminReports';
 import PostGoods from './pages/PostGoods'; 
+
+// --- NEW IMPORTS FOR MISSING ROUTES ---
+// NOTE: You must create these files in src/pages/
+import Settings from './pages/Settings'; 
+import Upgrade from './pages/Upgrade';
+// -------------------------------------
 
 // Component for 404 content
 const NotFoundContent = () => (
@@ -46,6 +51,7 @@ const App = () => {
       {/* The children are implicitly handled by BaseLayout's <Outlet /> */}
       <Route path="/" element={<BaseLayout />}> 
         
+        {/* Unauthenticated/Setup Routes */}
         <Route path="login" element={<Login />} />
         <Route path="signup" element={<Signup />} />
         <Route path="error" element={<ErrorPage />} />
@@ -53,17 +59,25 @@ const App = () => {
         
         <Route index element={<Navigate to="/marketplace" replace />} />
         
+        {/* Main Application Routes */}
         <Route path="marketplace" element={<Marketplace />} />
         <Route path="explore" element={<Explore />} />
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="post" element={<PostGoods />} /> 
 
+        {/* --- CRITICAL FIX: Add missing routes for Dashboard links --- */}
+        <Route path="settings" element={<Settings />} />     {/* <-- Handles Edit Profile link */}
+        <Route path="upgrade" element={<Upgrade />} />       {/* <-- Handles Upgrade Tier link */}
+        {/* --------------------------------------------------------- */}
+
+        {/* Admin Routes */}
         <Route path="admin" element={<AdminDashboard />} />
         <Route path="admin/users" element={<AdminUsers />} />
         <Route path="admin/ads" element={<AdminAds />} />
         <Route path="admin/tiers" element={<AdminTiers />} />
         <Route path="admin/reports" element={<AdminReports />} />
 
+        {/* 404 Catch-all */}
         <Route path="*" element={<NotFoundContent />} />
       </Route>
       
