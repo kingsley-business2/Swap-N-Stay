@@ -1,8 +1,9 @@
-// ========================== src/pages/admin/AdminAds.tsx ==========================
+// src/pages/admin/AdminAds.tsx
+
 import React, { useState } from 'react';
 import { supabase } from '../../api/supabase';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../../context/AuthContext'; // CORRECTED IMPORT PATH
 import toast from 'react-hot-toast';
 
 const AdminAds: React.FC = () => {
@@ -44,7 +45,8 @@ const AdminAds: React.FC = () => {
     setUploading(true);
     
     try {
-      const fileExt = file.name.split('.').pop();
+      // FIX: Renamed fileExt to _fileExt to suppress TS6133 warning
+      const _fileExt = file.name.split('.').pop(); 
       const fileName = `ads/${Date.now()}_${file.name}`;
       
       const { error } = await supabase.storage
