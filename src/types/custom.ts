@@ -2,32 +2,31 @@
 
 export type Tier = 'free' | 'premium' | 'gold';
 
-// UserProfile interface: Now 100% consistent with the Supabase 'profiles' table.
+// UserProfile interface: Consistent with the Supabase 'profiles' table after SQL updates.
 export interface UserProfile {
   id: string; // uuid
-  email?: string; // text (Optional as it often comes from auth.users, but good practice)
+  email?: string; 
   
-  // Fields to support Dashboard/UserSetup
-  username: string | null; // text
-  name: string | null; // text
+  // Fields from the profiles table
+  username: string | null; 
+  name: string | null; 
   
-  // CRITICAL FIXES: Use the correct column names as used in Settings/SetupProfile.tsx
-  phone_number: string | null; // text (Changed from 'phone' to 'phone_number' to match code)
-  date_of_birth: string | null; // date
-  location: string | null; // text
+  // CRITICAL FIXES: These fields were added to the DB via ALTER TABLE
+  phone_number: string | null; 
+  date_of_birth: string | null; 
+  location: string | null; 
   
   // Tier/Admin Fields
-  tier: Tier; // text
-  is_admin: boolean; // boolean
-  monthly_post_value?: number; // numeric (Optional, as not all systems use it)
+  tier: Tier; 
+  is_admin: boolean; 
+  monthly_post_value?: number; 
   
-  // Timestamp Fields (All timestamps are represented as ISO strings in JS)
-  created_at: string; // timestamp with time zone (Renamed to match typical column)
-  // Removed duplicate 'account_created_at' and 'updated_at' for simplicity.
+  // Timestamp Fields 
+  created_at: string; 
 }
 
 
-// Product interface: Consolidated and robust for live data pages.
+// Product interface: Full definition for pages like PostGoods and Marketplace.
 export interface Product {
   id: string;
   user_id: string;
@@ -43,7 +42,7 @@ export interface Product {
   image_urls?: any; // jsonb
   latitude?: number | null;
   longitude?: number | null;
-  location_coord?: any; // USER-DEFINED type
+  location_coord?: any; 
   created_at: string;
   updated_at: string;
 }
