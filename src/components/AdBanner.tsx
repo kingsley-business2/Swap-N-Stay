@@ -1,5 +1,5 @@
 // ========================== src/components/AdBanner.tsx ==========================
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react'; // Removed 'React'
 import { rotateAds, AdData } from '../utils/adRotation';
 
 // 🎯 FINAL with live Supabase Storage URLs
