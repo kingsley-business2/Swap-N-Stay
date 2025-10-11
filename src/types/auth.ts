@@ -1,21 +1,12 @@
 // src/types/auth.ts
 
-export interface UserProfile {
-  id: string;
-  // CRITICAL FIX: Add all required fields fetched from the database
-  email: string; 
-  name: string;
-  is_admin: boolean; 
-  
-  tier: 'free' | 'premium' | 'gold';
-  username?: string; 
-  created_at: string; 
-}
+// NOTE: UserProfile definition has been moved/consolidated into src/types/custom.ts.
+import { UserProfile } from './custom'; // Import the consolidated type
 
 export interface User {
     id: string;
     email: string;
-    profile: UserProfile | null;
+    profile: UserProfile | null; // Use the comprehensive profile type
 }
 
 export interface LoginCredentials {
