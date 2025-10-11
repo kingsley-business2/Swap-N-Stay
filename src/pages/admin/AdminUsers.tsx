@@ -1,9 +1,10 @@
-// ========================== src/pages/admin/AdminUsers.tsx ==========================
+// src/pages/admin/AdminUsers.tsx
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../api/supabase';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { useAuth } from '../../hooks/useAuth'; // Import useAuth
+import { useAuth } from '../../context/AuthContext'; // CORRECTED IMPORT PATH
 
 interface UserProfile {
   id: string;
@@ -15,7 +16,7 @@ interface UserProfile {
 
 const AdminUsers: React.FC = () => {
   // 1. Get authChecked and isAdmin from the hook
-  const { authChecked, isAdmin } = useAuth(); 
+  const { isAuthChecked: authChecked, isAdmin } = useAuth(); // NOTE: Assuming isAuthChecked is exported as isAuthChecked
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingUserId, setUpdatingUserId] = useState<string | null>(null);
