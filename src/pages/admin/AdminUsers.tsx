@@ -5,24 +5,18 @@ import { supabase } from '../../api/supabase';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
-// CRITICAL FIX: Import UserProfile from the canonical source
-import { UserProfile } from '../../types/auth'; 
-
-// REMOVED: Local UserProfile interface (Avoids TS conflict/inconsistency)
+import { UserProfile } from '../../types/auth'; // Importing the canonical type
 
 const AdminUsers: React.FC = () => {
-  // Use alias for local clarity if needed, but the original context property is 'isAuthChecked'
   const { isAuthChecked: authChecked, isAdmin } = useAuth(); 
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingUserId, setUpdatingUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    // Only run fetchUsers if authChecked is true AND the user is an admin.
     if (authChecked && isAdmin) {
       fetchUsers();
     } else if (authChecked && !isAdmin) {
-      // If auth is done and user is not admin, stop loading.
       setLoading(false);
     }
   }, [authChecked, isAdmin]);
@@ -32,8 +26,8 @@ const AdminUsers: React.FC = () => {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        // Ensure all required fields (email, username, tier, created_at) are selected
-        .select('id, email, username, tier, created_at') 
+        // CRITICAL FIX: Select all fields required by the UserProfile type
+        .select('id, email, username, tier, created_at, name, is_admin') 
         .order('created_at', { ascending: false });
       
       if (error) {
@@ -41,7 +35,7 @@ const AdminUsers: React.FC = () => {
       }
       
       if (data) {
-        // Data is safely cast to UserProfile[] because we updated the UserProfile interface
+        // The casting is now safe because the SELECT query fetches all required properties
         setUsers(data as UserProfile[]);
       }
     } catch (error) {
@@ -142,6 +136,7 @@ const AdminUsers: React.FC = () => {
                     <div className="avatar placeholder">
                       <div className="bg-neutral text-neutral-content rounded-full w-8">
                         <span className="text-xs">
+                          {/* All properties accessed here are now valid */}
                           {user.username?.[0]?.toUpperCase() || user.email[0].toUpperCase()}
                         </span>
                       </div>
