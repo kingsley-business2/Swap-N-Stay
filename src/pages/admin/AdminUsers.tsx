@@ -4,40 +4,36 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../api/supabase';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { useAuth } from '../../context/AuthContext'; // CORRECTED IMPORT PATH
+import { useAuth } from '../../context/AuthContext';
+// CRITICAL FIX: Import UserProfile from the canonical source
+import { UserProfile } from '../../types/auth'; 
 
-interface UserProfile {
-  id: string;
-  email: string;
-  username?: string;
-  tier: 'free' | 'premium' | 'gold';
-  created_at: string;
-}
+// REMOVED: Local UserProfile interface (Avoids TS conflict/inconsistency)
 
 const AdminUsers: React.FC = () => {
-  // 1. Get authChecked and isAdmin from the hook
-  const { isAuthChecked: authChecked, isAdmin } = useAuth(); // NOTE: Assuming isAuthChecked is exported as isAuthChecked
+  // Use alias for local clarity if needed, but the original context property is 'isAuthChecked'
+  const { isAuthChecked: authChecked, isAdmin } = useAuth(); 
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingUserId, setUpdatingUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    // 2. CRITICAL FIX: Only run fetchUsers if authChecked is true AND the user is an admin.
+    // Only run fetchUsers if authChecked is true AND the user is an admin.
     if (authChecked && isAdmin) {
       fetchUsers();
     } else if (authChecked && !isAdmin) {
       // If auth is done and user is not admin, stop loading.
       setLoading(false);
     }
-  }, [authChecked, isAdmin]); // 3. Update dependencies
+  }, [authChecked, isAdmin]);
 
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      // Live fetch of all profiles (Admin RLS must allow this)
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, email, username, tier, created_at') // Specify columns
+        // Ensure all required fields (email, username, tier, created_at) are selected
+        .select('id, email, username, tier, created_at') 
         .order('created_at', { ascending: false });
       
       if (error) {
@@ -45,6 +41,7 @@ const AdminUsers: React.FC = () => {
       }
       
       if (data) {
+        // Data is safely cast to UserProfile[] because we updated the UserProfile interface
         setUsers(data as UserProfile[]);
       }
     } catch (error) {
@@ -83,9 +80,9 @@ const AdminUsers: React.FC = () => {
       case 'free':
         return 'badge badge-info';
       case 'premium':
-        return 'badge badge-success'; // Changed to success for better visibility
+        return 'badge badge-success';
       case 'gold':
-        return 'badge badge-warning'; // Changed to warning for better visibility
+        return 'badge badge-warning';
       default:
         return 'badge badge-info';
     }
@@ -95,7 +92,6 @@ const AdminUsers: React.FC = () => {
     return tier.charAt(0).toUpperCase() + tier.slice(1);
   };
 
-  // 4. Update the loading check: show spinner until authChecked is true
   if (loading || !authChecked) { 
     return (
       <div className="p-8 flex justify-center items-center min-h-64">
@@ -104,7 +100,6 @@ const AdminUsers: React.FC = () => {
     );
   }
 
-  // 5. Explicitly handle Access Denied case after authChecked is true
   if (!isAdmin) {
     return (
       <div className="p-8">
@@ -118,7 +113,6 @@ const AdminUsers: React.FC = () => {
     );
   }
   
-  // The rest of the return statement (table structure) remains the same
   return (
     <div className="p-8">
       <div className="flex items-center gap-4 mb-6">
