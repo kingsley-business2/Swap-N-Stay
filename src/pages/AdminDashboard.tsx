@@ -1,6 +1,8 @@
+// src/pages/AdminDashboard.tsx
+
 import React from 'react';
-import { useAuth } from '../hooks/useAuth';
-import { Link } from 'react-router-dom'; // Fix #1: Added Link import
+import { useAuth } from '../context/AuthContext'; // CORRECTED IMPORT PATH
+import { Link } from 'react-router-dom'; 
 
 const AdminDashboard: React.FC = () => {
   const { isAdmin } = useAuth();
