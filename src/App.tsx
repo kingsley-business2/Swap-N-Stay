@@ -1,6 +1,5 @@
 // src/App.tsx
 
-import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import BaseLayout from './layouts/BaseLayout';
 import AuthRedirect from './components/AuthRedirect';
@@ -19,7 +18,10 @@ import AdminTiers from './pages/admin/AdminTiers';
 import AdminReports from './pages/admin/AdminReports';
 import PostGoods from './pages/PostGoods'; 
 
-const App: React.FC = () => {
+// Removed: import React from 'react';
+
+// Use React.FC only if necessary for prop definition, otherwise, use a standard function
+const App = () => {
   const { isLoading, isAuthChecked } = useAuth();
   
   if (isLoading || !isAuthChecked) {
@@ -32,21 +34,20 @@ const App: React.FC = () => {
 
   return (
     <Routes>
-      {/* 1. Public Routes (Wrapped in BaseLayout) */}
-      <Route path="/login" element={<BaseLayout><Login /></BaseLayout>} />
-      <Route path="/signup" element={<BaseLayout><Signup /></BaseLayout>} />
-      <Route path="/error" element={<BaseLayout><ErrorPage /></BaseLayout>} />
-      <Route path="/user-setup" element={<BaseLayout><UserSetup /></BaseLayout>} />
       
-      {/* 2. Root/Initial Route Handler */}
-      {/* This route catches the initial load and sends users to the correct page based on auth status. */}
+      {/* 1. Root/Initial Route Handler (Sends users to the correct page based on auth status) */}
       <Route path="/" element={<AuthRedirect />} /> 
 
-      {/* 3. Main Application Routes (Wrapped in BaseLayout for header/footer) */}
-      {/* All subsequent routes use the BaseLayout */}
+      {/* 2. Main Application Routes (Wrapped in BaseLayout for header/footer) */}
       <Route path="/" element={<BaseLayout />}>
         
-        {/* If a user somehow lands on the root '/' while authenticated, redirect them */}
+        {/* Public Routes (These are still nested under BaseLayout) */}
+        <Route path="login" element={<Login />} />
+        <Route path="signup" element={<Signup />} />
+        <Route path="error" element={<ErrorPage />} />
+        <Route path="user-setup" element={<UserSetup />} />
+        
+        {/* Redirect from root '/' while authenticated */}
         <Route index element={<Navigate to="/marketplace" replace />} />
         
         {/* User Routes */}
@@ -61,10 +62,16 @@ const App: React.FC = () => {
         <Route path="admin/ads" element={<AdminAds />} />
         <Route path="admin/tiers" element={<AdminTiers />} />
         <Route path="admin/reports" element={<AdminReports />} />
+
+        {/* Catch-all 404 Route (Renders inside BaseLayout) */}
+        <Route path="*" element={
+          <>
+            <h1 className="text-4xl font-bold">404: Not Found</h1>
+            <p className="mt-4">The page you are looking for does not exist.</p>
+          </>
+        } />
       </Route>
       
-      {/* 4. Catch-all 404 Route */}
-      <Route path="*" element={<BaseLayout><h1>404: Not Found</h1><p className="mt-4">The page you are looking for does not exist.</p></BaseLayout>} />
     </Routes>
   );
 };
