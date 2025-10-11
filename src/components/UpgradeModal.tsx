@@ -1,5 +1,5 @@
 // ========================== src/components/UpgradeModal.tsx ==========================
-import React from 'react';
+// Removed: import React from 'react';
 
 const UpgradeModal = () => (
   <dialog id="upgrade_modal" className="modal">
