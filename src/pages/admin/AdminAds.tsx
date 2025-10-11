@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { supabase } from '../../api/supabase';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext'; // CORRECTED IMPORT PATH
+import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 
 const AdminAds: React.FC = () => {
@@ -45,8 +45,7 @@ const AdminAds: React.FC = () => {
     setUploading(true);
     
     try {
-      // FIX: Renamed fileExt to _fileExt to suppress TS6133 warning
-      const _fileExt = file.name.split('.').pop(); 
+      // FIX: Removed the unused 'fileExt' logic entirely.
       const fileName = `ads/${Date.now()}_${file.name}`;
       
       const { error } = await supabase.storage
