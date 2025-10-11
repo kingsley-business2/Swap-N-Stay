@@ -10,12 +10,13 @@ export interface BaseUser {
 export interface UserProfile {
   id: string; // Should match BaseUser id
   name: string;
-  // Confirmed: Must use LOWERCASE tiers to match database value 'free'
+  // Confirmed: Using specific tiers
   tier: 'free' | 'premium' | 'gold' | 'admin'; 
   is_admin: boolean; 
 }
 
 // 3. The combined User structure used by the app's components
+// CRITICAL: Includes the profile object
 export interface User extends BaseUser {
     profile: UserProfile | null;
 }
