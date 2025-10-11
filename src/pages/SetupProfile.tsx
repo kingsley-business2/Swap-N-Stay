@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../api/supabase';
-import { useAuth } from '../context/AuthContext'; // CORRECTED HOOK PATH
+import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
 const SetupProfile: React.FC = () => {
@@ -18,8 +18,6 @@ const SetupProfile: React.FC = () => {
   const [location, setLocation] = useState('');
   const [loading, setLoading] = useState(false);
   
-  // NOTE: If you need to fetch existing profile data here, add a useEffect hook.
-
   const handleSetup = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -40,14 +38,11 @@ const SetupProfile: React.FC = () => {
       const { error } = await supabase
         .from('profiles')
         .update({
-          // Fields to be updated
           name: name.trim(),
           username: username.trim(),
-          phone_number: phone.trim() || null, // Assuming 'phone_number' column in profiles
-          date_of_birth: dob || null,         // Assuming 'date_of_birth' column in profiles
-          location: location.trim() || null,  // Assuming 'location' column in profiles
-          
-          // Initial default fields (already in the table, but ensuring completeness)
+          phone_number: phone.trim() || null,
+          date_of_birth: dob || null,
+          location: location.trim() || null,
           tier: 'free',
           is_admin: false
         })
@@ -58,8 +53,7 @@ const SetupProfile: React.FC = () => {
         return;
       }
 
-      toast.success('Profile setup complete!');
-      // After setup, redirect to a safe page. AuthContext should handle refresh.
+      toast.success('Profile details saved!');
       navigate('/dashboard'); 
     } catch (error: any) {
       console.error('Profile setup error:', error);
@@ -80,21 +74,21 @@ const SetupProfile: React.FC = () => {
           <input
             type="text"
             className="input input-bordered w-full"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            value={name} // FIX CHECK: Value binding is correct
+            onChange={(e) => setName(e.target.value)} // FIX CHECK: Change handler is correct
             required
             placeholder="Enter your full name"
           />
         </div>
 
-        {/* Username Input (Existing) */}
+        {/* Username Input */}
         <div className="form-control">
           <label className="label"><span className="label-text">Username</span></label>
           <input
             type="text"
             className="input input-bordered w-full"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            value={username} // FIX CHECK: Value binding is correct
+            onChange={(e) => setUsername(e.target.value)} // FIX CHECK: Change handler is correct
             required
             placeholder="Choose a username"
             minLength={3}
@@ -108,8 +102,8 @@ const SetupProfile: React.FC = () => {
           <input
             type="tel"
             className="input input-bordered w-full"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
+            value={phone} // FIX CHECK: Value binding is correct
+            onChange={(e) => setPhone(e.target.value)} // FIX CHECK: Change handler is correct
             placeholder="e.g., +233 55 123 4567"
           />
         </div>
@@ -120,8 +114,8 @@ const SetupProfile: React.FC = () => {
           <input
             type="date"
             className="input input-bordered w-full"
-            value={dob}
-            onChange={(e) => setDob(e.target.value)}
+            value={dob} // FIX CHECK: Value binding is correct
+            onChange={(e) => setDob(e.target.value)} // FIX CHECK: Change handler is correct
           />
         </div>
 
@@ -131,8 +125,8 @@ const SetupProfile: React.FC = () => {
           <input
             type="text"
             className="input input-bordered w-full"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
+            value={location} // FIX CHECK: Value binding is correct
+            onChange={(e) => setLocation(e.target.value)} // FIX CHECK: Change handler is correct
             placeholder="City, Country"
           />
         </div>
