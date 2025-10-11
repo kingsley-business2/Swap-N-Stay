@@ -1,34 +1,30 @@
 // src/types/auth.ts
 
-// 1. The base user structure (from Supabase auth.users)
-export interface BaseUser {
-  id: string;
-  email: string;
-}
-
-// 2. Separate interface for profile data (from the 'profiles' database table)
 export interface UserProfile {
-  id: string; // Should match BaseUser id
+  id: string;
+  // CRITICAL FIX: Add all required fields fetched from the database
+  email: string; 
   name: string;
-  // Confirmed: Using specific tiers
-  tier: 'free' | 'premium' | 'gold' | 'admin'; 
   is_admin: boolean; 
+  
+  tier: 'free' | 'premium' | 'gold';
+  username?: string; 
+  created_at: string; 
 }
 
-// 3. The combined User structure used by the app's components
-// CRITICAL: Includes the profile object
-export interface User extends BaseUser {
+export interface User {
+    id: string;
+    email: string;
     profile: UserProfile | null;
 }
 
-// 4. Credentials for Login and Registration
 export interface LoginCredentials {
-  email: string;
-  password: string;
+    email: string;
+    password: string;
 }
 
 export interface RegisterCredentials {
-  email: string;
-  password: string;
-  name: string;
+    email: string;
+    password: string;
+    name: string;
 }
