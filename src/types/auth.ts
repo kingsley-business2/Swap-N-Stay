@@ -1,16 +1,16 @@
 // src/types/auth.ts
 
-// The TS2304 error is caused by the line 'import { UserProfile } from './custom';' 
-// conflicting with the re-export and the 'User' interface.
-// We remove the explicit import and rely solely on the export type.
+// Step 1: Import the type locally (needed for the 'User' interface below)
+import type { UserProfile } from './custom'; 
 
-// CRITICAL FIX: Use 'export type' to comply with isolatedModules setting 
+// Step 2: Re-export the type for other modules (AuthContext, Dashboard, etc.)
+// This resolves the TS2459 errors that plagued us before.
 export type { UserProfile } from './custom'; 
 
 export interface User {
     id: string;
     email: string;
-    // CRITICAL FIX: The type is now available globally within this module
+    // This line (now line 14) now correctly finds UserProfile via the import above.
     profile: UserProfile | null; 
 }
 
