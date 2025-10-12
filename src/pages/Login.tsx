@@ -1,8 +1,8 @@
-// ========================== src/pages/Login.tsx (FINAL REGENERATION) ==========================
+// ========================== src/pages/Login.tsx (RE-FIXED: Syntax and Navigation) ==========================
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../api/supabase';
-// NOTE: Assuming useAuth is correctly exported from '../context/AuthContext'
+// Ensure the import below is correct for your project:
 import { useAuth } from '../context/AuthContext'; 
 import toast from 'react-hot-toast';
 
@@ -11,13 +11,12 @@ const Login: React.FC = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  // Line 16 is here:
   const { user } = useAuth();
 
   // Redirect if already logged in
   useEffect(() => {
     if (user) {
-      // Navigate to root path ('/') after successful login
+      // Navigate to root path, where AuthRedirect handles the final destination
       navigate('/', { replace: true });
     }
   }, [user, navigate]);
