@@ -1,4 +1,4 @@
-// ========================== src/types/custom.ts (UPDATED) ==========================
+// ========================== src/types/custom.ts (UPDATED FOR JOIN) ==========================
 
 export type Tier = 'free' | 'premium' | 'gold';
 
@@ -31,24 +31,31 @@ export interface UserProfile {
 export interface Listing {
   id: string;
   user_id: string;
-  category_id?: string; // Made optional as it wasn't used in PostGoods
-  title: string; // Used 'title' from PostGoods
-  name?: string; // Added optional 'name' if products table is still used elsewhere
+  category_id?: string; 
+  title: string; 
+  name?: string; 
   description: string;
-  quantity?: number; // Made optional as it wasn't used in PostGoods
+  quantity?: number; 
   price: number;
-  location?: string; // Made optional
-  status?: string; // Made optional
+  location?: string; 
+  status?: string; 
   image_url?: string;
   video_url?: string | null;
   image_urls?: any; // jsonb
-  media_url: string; // Added the media_url column used in PostGoods
+  media_url: string; 
   latitude?: number | null;
   longitude?: number | null;
   location_coord?: any; 
   created_at: string;
   updated_at: string;
 }
+
+// ⭐ NEW TYPE: Combined type for Listings displayed in the Marketplace (includes profile data)
+export interface MarketplaceListing extends Listing {
+  // Assuming the user_id foreign key links to the 'profiles' table
+  profiles: Pick<UserProfile, 'username' | 'name' | 'tier' | 'location'> | null;
+}
+
 
 // CRITICAL FIX: Simplified type for Explore.tsx to fix TS2345 error.
 export interface ProductSummary {
