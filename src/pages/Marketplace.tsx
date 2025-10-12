@@ -1,9 +1,9 @@
-// ========================== src/pages/Marketplace.tsx (UPDATED) ==========================
+// ========================== src/pages/Marketplace.tsx (FINAL FIX) ==========================
 import React, { useState, useEffect } from 'react';
 import PostProductModal from '../components/marketplace/PostProductModal';
 import { supabase } from '../api/supabase';
 import toast from 'react-hot-toast';
-import { Listing } from '../types/custom'; // Type imported as 'Listing'
+import { Listing } from '../types/custom'; // <--- FIX HERE: Changed 'Product' to 'Listing'
 
 const Marketplace: React.FC = () => {
   // Use 'Listing' type for state
@@ -17,7 +17,7 @@ const Marketplace: React.FC = () => {
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      // FIX 1: Change 'products' to 'listings' to query the correct table
+      // Correctly querying the 'listings' table
       const { data, error } = await supabase
         .from('listings') 
         .select('*') 
@@ -29,7 +29,7 @@ const Marketplace: React.FC = () => {
 
       setProducts(data || []);
     } catch (error: any) {
-      console.error('Error fetching marketplace listings:', error); // Updated log message
+      console.error('Error fetching marketplace listings:', error); 
       toast.error(`Failed to load listings: ${error.message || 'Check RLS rules.'}`);
       setProducts([]); 
     } finally {
@@ -76,10 +76,8 @@ const Marketplace: React.FC = () => {
         ) : (
           products.map(product => (
             <div key={product.id} className="card bg-base-200 shadow-md p-6">
-              {/* FIX 2: Use product.title instead of product.name */}
               <h3 className="font-bold">{product.title}</h3> 
               <p className="text-sm text-gray-600 truncate">{product.description}</p>
-              {/* FIX 3: Display price using GHC formatter */}
               <p className="mt-2 text-lg font-semibold">{formatPriceGHC(product.price)}</p>
             </div>
           ))
