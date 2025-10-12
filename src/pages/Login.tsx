@@ -1,8 +1,7 @@
-// ========================== src/pages/Login.tsx (RE-FIXED: Syntax and Navigation) ==========================
+// ========================== src/pages/Login.tsx (FINAL CORRECTED CONTENT) ==========================
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../api/supabase';
-// Ensure the import below is correct for your project:
 import { useAuth } from '../context/AuthContext'; 
 import toast from 'react-hot-toast';
 
