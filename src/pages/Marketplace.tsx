@@ -1,13 +1,13 @@
-// ========================== src/pages/Marketplace.tsx (FINAL CORRECTED CONTENT) ==========================
+// ========================== src/pages/Marketplace.tsx (FINAL FIX) ==========================
 import React, { useState, useEffect } from 'react';
 import PostProductModal from '../components/marketplace/PostProductModal';
 import { supabase } from '../api/supabase';
 import toast from 'react-hot-toast';
-// ⭐ FIX: Removed unused 'Listing' import to resolve TS6133 warning.
+// ⭐ FIX: Removed unused 'Listing' import to resolve TS6133 warning/error.
 import { MarketplaceListing } from '../types/custom'; 
 
 const Marketplace: React.FC = () => {
-  // Use 'MarketplaceListing' type for state
+  // ⭐ UPDATE: Use 'MarketplaceListing' type for state
   const [products, setProducts] = useState<MarketplaceListing[]>([]); 
   const [loading, setLoading] = useState(true);
 
@@ -41,16 +41,8 @@ const Marketplace: React.FC = () => {
       setLoading(false);
     }
   };
-
-  if (loading) {
-    return (
-      <div className="p-8 flex justify-center">
-        <span className="loading loading-spinner loading-lg"></span>
-      </div>
-    );
-  }
-
-  // Helper to format price to GHC
+  
+  // Helper to format price to GHC (function unchanged)
   const formatPriceGHC = (price: number | null | undefined): string => {
     if (price === null || price === undefined) return 'N/A';
     return new Intl.NumberFormat('en-GH', {
