@@ -1,12 +1,12 @@
-// ========================== src/types/custom.ts (UPDATED TO EXPORT NEW TYPES) ==========================
+// ========================== src/types/custom.ts (FINAL EXPORTED TYPES) ==========================
 
+// Define the Tier union type
 export type Tier = 'free' | 'premium' | 'gold';
 
-// UserProfile interface: ... (keep existing content)
+// Define the User Profile interface
 export interface UserProfile {
-  id: string; // uuid
+  id: string; // uuid from auth.users
   email?: string; 
-  // ... (rest of UserProfile fields)
   username: string | null; 
   name: string | null; 
   phone_number: string | null; 
@@ -18,14 +18,13 @@ export interface UserProfile {
   created_at: string; 
 }
 
-
-// ⭐ FIX: Ensure Listing is EXPORTED
+// Define the base Listing interface (matches the 'listings' table structure)
 export interface Listing {
   id: string;
   user_id: string;
   category_id?: string; 
   title: string; 
-  name?: string; 
+  name?: string; // Optional: If the DB uses 'name' instead of 'title' for display
   description: string;
   quantity?: number; 
   price: number;
@@ -42,19 +41,21 @@ export interface Listing {
   updated_at: string;
 }
 
-// ⭐ CRITICAL FIX: Ensure MarketplaceListing is DEFINED and EXPORTED
+// Define the MarketplaceListing interface (includes joined profile data)
+// This is used in Marketplace.tsx when fetching the join query.
 export interface MarketplaceListing extends Listing {
+  // Uses Pick to define only the fields needed from the joined 'profiles' table
   profiles: Pick<UserProfile, 'username' | 'name' | 'tier' | 'location'> | null;
 }
 
-
-// CRITICAL FIX: Simplified type for Explore.tsx to fix TS2345 error.
+// Simplified type for a product summary (used for general exploration/search results)
 export interface ProductSummary {
   id: string;
   name: string;
   description: string;
 }
 
+// Type for the Ad Banner component
 export interface AdCampaignClient {
     id: number;
     title: string;
