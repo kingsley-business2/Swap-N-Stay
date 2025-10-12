@@ -1,4 +1,4 @@
-// ========================== src/App.tsx (FINAL CLEAN VERSION) ==========================
+// ========================== src/App.tsx (FINAL CONFIRMED VERSION) ==========================
 import React, { useEffect } from 'react';
 import { 
   BrowserRouter as Router, 
@@ -23,25 +23,28 @@ import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import Login from './pages/Login'; 
 import Signup from './pages/Signup';
-import Profile from './pages/Profile'; 
+import Profile from './pages/Profile'; // Assuming this file was created
 import SetupProfile from './pages/SetupProfile'; 
 import ErrorPage from './pages/ErrorPage'; 
-// REMOVED: import AuthCallback from './pages/AuthCallback'; // CONFLICTING IMPORT
+// NOTE: Conflicting import of AuthCallback is now removed/managed locally
 
 // --------------------------------------------------------------------------------
 
-// Simplified AuthCallback logic (Defined locally for the route)
+// Component that handles redirection after the Supabase auth flow
 const AuthCallbackRoute: React.FC = () => {
   const navigate = useNavigate();
-  const { isAuthChecked } = useAuth(); 
+  const { isAuthChecked } = useAuth(); // Can be used for initial state check
 
   useEffect(() => {
+    // Listen for auth events (e.g., email confirmation redirect)
     const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
         if (session && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
+            // Redirect to the root, where AuthRedirect component takes over
             navigate('/', { replace: true });
         }
     });
 
+    // Clean up the listener
     return () => {
         authListener.subscription.unsubscribe();
     };
