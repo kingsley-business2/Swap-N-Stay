@@ -23,7 +23,7 @@ import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import Login from './pages/Login'; 
 import Signup from './pages/Signup';
-import Profile from './pages/Profile'; // Assuming this file was created
+import Profile from './pages/Profile'; 
 import SetupProfile from './pages/SetupProfile'; 
 import ErrorPage from './pages/ErrorPage'; 
 // NOTE: Conflicting import of AuthCallback is now removed/managed locally
@@ -33,7 +33,8 @@ import ErrorPage from './pages/ErrorPage';
 // Component that handles redirection after the Supabase auth flow
 const AuthCallbackRoute: React.FC = () => {
   const navigate = useNavigate();
-  const { isAuthChecked } = useAuth(); // Can be used for initial state check
+  // FIX: Destructure nothing, as the properties were unused (resolves TS6133)
+  useAuth(); 
 
   useEffect(() => {
     // Listen for auth events (e.g., email confirmation redirect)
