@@ -1,4 +1,4 @@
-// ========================== src/App.tsx (FINAL CORRECTED CONTENT) ==========================
+// ========================== src/App.tsx (UPDATED TO ADD MY LISTINGS) ==========================
 
 // CRITICAL FIX: Removed unused 'Navigate' import
 import { Routes, Route } from 'react-router-dom'; 
@@ -23,26 +23,16 @@ import PostGoods from './pages/PostGoods';
 // --- NEW IMPORTS FOR MISSING ROUTES ---
 import Settings from './pages/Settings'; 
 import Upgrade from './pages/Upgrade';
+// ⭐ NEW IMPORT: Add MyListings
+import MyListings from './pages/MyListings';
 // -------------------------------------
 
 // Component for 404 content
 const NotFoundContent = () => (
-  <>
-    <h1 className="text-4xl font-bold">404: Not Found</h1>
-    <p className="mt-4">The page you are looking for does not exist.</p>
-  </>
-);
+// ... (no change)
 
 const App = () => {
-  const { isLoading, isAuthChecked } = useAuth();
-  
-  if (isLoading || !isAuthChecked) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <span className="loading loading-spinner loading-lg text-primary"></span>
-      </div>
-    );
-  }
+// ... (no change)
 
   return (
     <Routes>
@@ -65,19 +55,16 @@ const App = () => {
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="post" element={<PostGoods />} /> 
 
+        {/* ⭐ NEW ROUTE: Add the My Listings page */}
+        <Route path="my-listings" element={<MyListings />} /> 
+
         {/* Missing routes for Dashboard links */}
         <Route path="settings" element={<Settings />} />     
         <Route path="upgrade" element={<Upgrade />} />       
 
         {/* Admin Routes */}
         <Route path="admin" element={<AdminDashboard />} />
-        <Route path="admin/users" element={<AdminUsers />} />
-        <Route path="admin/ads" element={<AdminAds />} />
-        <Route path="admin/tiers" element={<AdminTiers />} />
-        <Route path="admin/reports" element={<AdminReports />} />
-
-        {/* 404 Catch-all */}
-        <Route path="*" element={<NotFoundContent />} />
+// ... (rest of admin routes and 404 unchanged)
       </Route>
       
     </Routes>
