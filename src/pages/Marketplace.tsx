@@ -1,15 +1,15 @@
-// ========================== src/pages/Marketplace.tsx (FINAL CLEANUP) ==========================
+// ========================== src/pages/Marketplace.tsx (FINAL CONFIRMED FIX) ==========================
 import React, { useState, useEffect } from 'react';
 import PostProductModal from '../components/marketplace/PostProductModal';
 import { supabase } from '../api/supabase';
 import toast from 'react-hot-toast';
-// FIX: Only import MarketplaceListing (resolves prior TS6133 for 'Listing')
+// FIX: Only importing MarketplaceListing to clean up the unused 'Listing' import
 import { MarketplaceListing } from '../types/custom'; 
 
 const Marketplace: React.FC = () => {
-  // Use 'MarketplaceListing' type for state
+  // ⭐ CRITICAL FIX CHECK: Ensure [loading] is correctly destructured.
   const [products, setProducts] = useState<MarketplaceListing[]>([]); 
-  const [loading, setLoading] = useState(true); // <-- Declared here
+  const [loading, setLoading] = useState(true); 
 
   useEffect(() => {
     fetchProducts();
@@ -18,7 +18,7 @@ const Marketplace: React.FC = () => {
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      // CRITICAL FIX: Add 'profiles(...)' to select statement to join user data.
+      // Confirmed fix for missing user details (Supabase JOIN)
       const { data, error } = await supabase
         .from('listings') 
         .select(`
@@ -31,7 +31,6 @@ const Marketplace: React.FC = () => {
         throw error;
       }
 
-      // Cast the data to the correct type
       setProducts((data as MarketplaceListing[]) || []);
     } catch (error: any) {
       console.error('Error fetching marketplace listings:', error); 
@@ -42,7 +41,7 @@ const Marketplace: React.FC = () => {
     }
   };
 
-  // ⭐ CRITICAL FIX: Ensure this block is present to consume 'loading'
+  // ⭐ CRITICAL FIX CHECK: This block USES the 'loading' state, resolving TS6133.
   if (loading) { 
     return (
       <div className="p-8 flex justify-center">
@@ -50,7 +49,7 @@ const Marketplace: React.FC = () => {
       </div>
     );
   }
-  // End of CRITICAL FIX
+  // End of CRITICAL FIX CHECK
 
   // Helper to format price to GHC
   const formatPriceGHC = (price: number | null | undefined): string => {
@@ -87,7 +86,7 @@ const Marketplace: React.FC = () => {
               <p className="text-sm text-gray-600 truncate">{product.description}</p>
               <p className="mt-2 text-lg font-semibold">{formatPriceGHC(product.price)}</p>
               
-              {/* FIX: Display user name and tier (if profiles data exists) */}
+              {/* Fix for displaying user data */}
               {product.profiles && (
                 <div className="mt-4 text-xs text-gray-500">
                   <span>Posted by: {product.profiles.name || product.profiles.username || 'Anonymous'}</span>
@@ -96,7 +95,7 @@ const Marketplace: React.FC = () => {
                   </span>
                 </div>
               )}
-              {/* END FIX */}
+              {/* End fix */}
               
             </div>
           ))
