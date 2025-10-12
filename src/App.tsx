@@ -1,92 +1,96 @@
-// ========================== src/App.tsx (FIXED SYNTAX) ==========================
+// ========================== src/App.tsx (UPDATED) ==========================
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import Navbar from './components/layout/Navbar'; 
+import Footer from './components/layout/Footer';
 
-// CRITICAL FIX: Removed unused 'Navigate' import
-import { Routes, Route } from 'react-router-dom'; 
-
-import BaseLayout from './layouts/BaseLayout';
-import AuthRedirect from './components/AuthRedirect';
-import { useAuth } from './context/AuthContext'; 
+// Pages
 import Marketplace from './pages/Marketplace';
+import MyListings from './pages/MyListings'; // Assuming you added this
+import Dashboard from './pages/Dashboard'; // User Dashboard
 import AdminDashboard from './pages/AdminDashboard';
-import Explore from './pages/Explore';
-import Dashboard from './pages/Dashboard';
-import Login from './pages/Login';
-import Signup from './pages/Signup';
-import UserSetup from './pages/UserSetup';
-import ErrorPage from './pages/ErrorPage';
-import AdminUsers from './pages/admin/AdminUsers';
-import AdminAds from './pages/admin/AdminAds';
-import AdminTiers from './pages/admin/AdminTiers';
-import AdminReports from './pages/admin/AdminReports';
-import PostGoods from './pages/PostGoods'; 
-import MyListings from './pages/MyListings'; // Keep this new import
+import SignIn from './pages/SignIn'; // Your sign-in/auth page
+import SignUp from './pages/SignUp'; // Your sign-up page
+import Profile from './pages/Profile'; // Your profile settings page
+import NotFound from './pages/NotFound'; // Create this simple 404 page
 
-// --- NEW IMPORTS FOR MISSING ROUTES ---
-import Settings from './pages/Settings'; 
-import Upgrade from './pages/Upgrade';
-// -------------------------------------
+// Components
+import PrivateRoute from './components/routing/PrivateRoute'; // New component
 
-// ⭐ FIX: Ensure this component is defined cleanly. The syntax errors (TS1359, TS1005) 
-// likely relate to malformed code *around* this declaration in your file.
-const NotFoundContent = () => (
-  <>
-    <h1 className="text-4xl font-bold">404: Not Found</h1>
-    <p className="mt-4">The page you are looking for does not exist.</p>
-  </>
-);
+// --------------------------------------------------------------------------------
 
-const App = () => { // <--- The error was likely appearing right before or on this line (Line 34)
-  const { isLoading, isAuthChecked } = useAuth();
+// Component to handle redirection logic after sign-in
+const ConditionalSignInRoute: React.FC = ({ children }) => {
+  const { isAuthenticated } = useAuth();
   
-  if (isLoading || !isAuthChecked) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <span className="loading loading-spinner loading-lg text-primary"></span>
-      </div>
-    );
+  // ⭐ FIX for "no automatic marketplace access right after signing in"
+  // If the user is authenticated, redirect them directly to the Marketplace.
+  if (isAuthenticated) {
+    return <Navigate to="/marketplace" replace />;
   }
 
+  // Otherwise, render the sign-in page content (children)
+  return children as React.ReactElement;
+};
+
+// --------------------------------------------------------------------------------
+
+const AppContent: React.FC = () => {
   return (
-    <Routes>
-      
-      {/* Route 1: This is the entry point, it handles session checking and redirecting */}
-      <Route path="/" element={<AuthRedirect />} /> 
+    <div className="flex flex-col min-h-screen">
+      <Navbar />
+      <main className="flex-grow">
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={<Navigate to="/marketplace" replace />} />
+          
+          {/* Conditional Auth Routes (Redirects if logged in) */}
+          <Route 
+            path="/signin" 
+            element={
+              <ConditionalSignInRoute>
+                <SignIn />
+              </ConditionalSignInRoute>
+            } 
+          />
+          <Route path="/signup" element={<SignUp />} />
 
-      {/* The children are implicitly handled by BaseLayout's <Outlet /> */}
-      <Route path="/" element={<BaseLayout />}> 
-        
-        {/* Unauthenticated/Setup Routes */}
-        <Route path="login" element={<Login />} />
-        <Route path="signup" element={<Signup />} />
-        <Route path="error" element={<ErrorPage />} />
-        <Route path="user-setup" element={<UserSetup />} />
-        
-        {/* Main Application Routes */}
-        <Route path="marketplace" element={<Marketplace />} />
-        <Route path="explore" element={<Explore />} />
-        <Route path="dashboard" element={<Dashboard />} />
-        <Route path="post" element={<PostGoods />} /> 
+          {/* Core App Routes */}
+          <Route path="/marketplace" element={<Marketplace />} />
+          
+          {/* Protected Routes (Requires Auth) */}
+          <Route element={<PrivateRoute />}>
+            {/* User Dashboard is the main logged-in landing page */}
+            <Route path="/dashboard" element={<Dashboard />} /> 
+            {/* My Listings page */}
+            <Route path="/my-listings" element={<MyListings />} /> 
+            {/* User Profile/Settings */}
+            <Route path="/profile" element={<Profile />} /> 
+          </Route>
 
-        {/* NEW ROUTE: My Listings page */}
-        <Route path="my-listings" element={<MyListings />} /> 
+          {/* Admin Protected Routes (You'll need a way to check isAdmin within AdminDashboard) */}
+          <Route element={<PrivateRoute />}>
+             <Route path="/admin" element={<AdminDashboard />} /> 
+          </Route>
 
-        {/* Missing routes for Dashboard links */}
-        <Route path="settings" element={<Settings />} />     
-        <Route path="upgrade" element={<Upgrade />} />       
-
-        {/* Admin Routes */}
-        <Route path="admin" element={<AdminDashboard />} />
-        <Route path="admin/users" element={<AdminUsers />} />
-        <Route path="admin/ads" element={<AdminAds />} />
-        <Route path="admin/tiers" element={<AdminTiers />} />
-        <Route path="admin/reports" element={<AdminReports />} />
-
-        {/* 404 Catch-all */}
-        <Route path="*" element={<NotFoundContent />} /> 
-      </Route>
-      
-    </Routes>
+          {/* Catch-all 404 Route */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </main>
+      <Footer />
+      <Toaster />
+    </div>
   );
 };
+
+const App: React.FC = () => (
+  <Router>
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
+  </Router>
+);
 
 export default App;
