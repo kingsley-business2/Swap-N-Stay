@@ -1,4 +1,4 @@
-// ========================== src/types/custom.ts (FINAL ADJUSTMENT) ==========================
+// ========================== src/types/custom.ts (UPDATED) ==========================
 
 export type Tier = 'free' | 'premium' | 'gold';
 
@@ -26,20 +26,23 @@ export interface UserProfile {
 }
 
 
-// Product interface: Full definition for pages like PostGoods and Marketplace.
-export interface Product {
+// Listing interface: Full definition for pages like PostGoods and Marketplace, now correctly 
+// named to map to the 'listings' table.
+export interface Listing {
   id: string;
   user_id: string;
-  category_id: string;
-  name: string;
+  category_id?: string; // Made optional as it wasn't used in PostGoods
+  title: string; // Used 'title' from PostGoods
+  name?: string; // Added optional 'name' if products table is still used elsewhere
   description: string;
-  quantity: number;
+  quantity?: number; // Made optional as it wasn't used in PostGoods
   price: number;
-  location: string;
-  status: string;
-  image_url: string;
+  location?: string; // Made optional
+  status?: string; // Made optional
+  image_url?: string;
   video_url?: string | null;
   image_urls?: any; // jsonb
+  media_url: string; // Added the media_url column used in PostGoods
   latitude?: number | null;
   longitude?: number | null;
   location_coord?: any; 
