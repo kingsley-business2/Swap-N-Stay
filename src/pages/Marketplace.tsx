@@ -1,15 +1,15 @@
-// ========================== src/pages/Marketplace.tsx (FINAL FIX) ==========================
+// ========================== src/pages/Marketplace.tsx (FINAL CLEANUP) ==========================
 import React, { useState, useEffect } from 'react';
 import PostProductModal from '../components/marketplace/PostProductModal';
 import { supabase } from '../api/supabase';
 import toast from 'react-hot-toast';
-// ⭐ FIX: Removed unused 'Listing' import to resolve TS6133 warning/error.
+// FIX: Only import MarketplaceListing (resolves prior TS6133 for 'Listing')
 import { MarketplaceListing } from '../types/custom'; 
 
 const Marketplace: React.FC = () => {
-  // ⭐ UPDATE: Use 'MarketplaceListing' type for state
+  // Use 'MarketplaceListing' type for state
   const [products, setProducts] = useState<MarketplaceListing[]>([]); 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // <-- Declared here
 
   useEffect(() => {
     fetchProducts();
@@ -41,8 +41,18 @@ const Marketplace: React.FC = () => {
       setLoading(false);
     }
   };
-  
-  // Helper to format price to GHC (function unchanged)
+
+  // ⭐ CRITICAL FIX: Ensure this block is present to consume 'loading'
+  if (loading) { 
+    return (
+      <div className="p-8 flex justify-center">
+        <span className="loading loading-spinner loading-lg"></span>
+      </div>
+    );
+  }
+  // End of CRITICAL FIX
+
+  // Helper to format price to GHC
   const formatPriceGHC = (price: number | null | undefined): string => {
     if (price === null || price === undefined) return 'N/A';
     return new Intl.NumberFormat('en-GH', {
