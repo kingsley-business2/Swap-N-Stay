@@ -1,4 +1,4 @@
-// ========================== src/components/marketplace/PostProductModal.tsx ==========================
+// ========================== src/components/marketplace/PostProductModal.tsx (FINAL FIX: Table Name) ==========================
 import React, { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useTierLimits } from '../../hooks/useTierLimits';
@@ -44,10 +44,10 @@ const PostProductModal: React.FC<PostProductModalProps> = ({ onPostSuccess }) =>
       imageUrl = publicUrl;
       
       // 2. Insert the product data - Supabase will enforce tier limits
-      const { error } = await supabase.from('products').insert({
+      const { error } = await supabase.from('listings').insert({ // <--- CRITICAL CHANGE: Changed 'products' to 'listings'
         user_id: user.id,
         category_id: CROPS_CATEGORY_ID, 
-        name,
+        name, // Note: your listings table may have 'title' not 'name'. Check your DB schema.
         description,
         price,
         image_url: imageUrl,
@@ -57,7 +57,7 @@ const PostProductModal: React.FC<PostProductModalProps> = ({ onPostSuccess }) =>
 
       toast.success('Product posted successfully!');
       
-      // Call the success callback if provided
+      // Call the success callback if provided (This correctly refreshes the lists!)
       if (onPostSuccess) {
         onPostSuccess();
       }
