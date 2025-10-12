@@ -1,52 +1,56 @@
-// ========================== src/App.tsx (FINAL CONSOLIDATED VERSION) ==========================
-import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+// ========================== src/App.tsx (Final Corrected Imports and Structure) ==========================
+import React, { useEffect } from 'react'; // <-- ADDED useEffect
+import { 
+  BrowserRouter as Router, 
+  Routes, 
+  Route, 
+  Navigate, // <-- Ensure this is used
+  useNavigate // <-- ADDED useNavigate
+} from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { supabase } from './api/supabase'; // Used in AuthCallback
+import { supabase } from './api/supabase';
 
 // Components
 import Header from './components/Header';
-import Footer from './components/Footer'; // Corrected path
+import Footer from './components/Footer'; 
 import PrivateRoute from './components/routing/PrivateRoute';
-import AuthRedirect from './components/AuthRedirect'; // <-- Using your component
+import AuthRedirect from './components/AuthRedirect';
 
 // Pages
 import Marketplace from './pages/Marketplace';
 import MyListings from './pages/MyListings'; 
 import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
-import Login from './pages/Login'; // Corrected name
+import Login from './pages/Login'; 
 import Signup from './pages/Signup';
-import Profile from './pages/Profile'; 
+import Profile from './pages/Profile'; // ⚠️ You must create this file
 import SetupProfile from './pages/SetupProfile'; 
-import ErrorPage from './pages/ErrorPage'; // Corrected name
-
+import ErrorPage from './pages/ErrorPage'; 
+import AuthCallback from './pages/AuthCallback'; // <-- IMPORTED and used here
 
 // --------------------------------------------------------------------------------
 
-// Simplified AuthCallback logic to trigger re-check and redirect
-const AuthCallback: React.FC = () => {
+// Simplified AuthCallback logic (Moved outside AppContent for clean imports)
+// NOTE: We MUST import AuthCallback from its file, not define it locally.
+const AuthCallbackRoute: React.FC = () => {
   const navigate = useNavigate();
-  const { isAuthChecked } = useAuth(); // Monitor auth state change
+  const { isAuthChecked } = useAuth(); 
 
   useEffect(() => {
-    // If the session is detected and auth is checked, redirect to the landing page
-    if (isAuthChecked) {
-      navigate('/', { replace: true });
-    }
-    
-    // Listen for auth events (needed for email confirmation links)
+    // Only here to explicitly handle redirects after auth events
     const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
         if (session && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
+            // Use AuthRedirect logic on the root page
             navigate('/', { replace: true });
         }
     });
 
+    // Clean up the listener
     return () => {
         authListener.subscription.unsubscribe();
     };
-  }, [isAuthChecked, navigate]);
+  }, [navigate]);
 
   return (
     <div className="flex items-center justify-center min-h-screen p-8">
@@ -71,25 +75,19 @@ const AppContent: React.FC = () => {
           {/* Auth Pages */}
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
-          <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route path="/auth/callback" element={<AuthCallbackRoute />} /> // <-- Using the component
           
           {/* Core App Routes */}
           <Route path="/marketplace" element={<Marketplace />} />
           
           {/* Protected Routes (Requires Auth) */}
           <Route element={<PrivateRoute />}>
-            {/* Must be completed by all new users */}
             <Route path="/setup-profile" element={<SetupProfile />} /> 
             
-            {/* Standard User Routes */}
             <Route path="/dashboard" element={<Dashboard />} /> 
             <Route path="/my-listings" element={<MyListings />} /> 
             <Route path="/profile" element={<Profile />} /> 
 
-            {/* If the 'Post Goods/Services' button uses a route instead of a modal: */}
-            {/* <Route path="/post" element={<PostPage />} /> */}
-            
-            {/* Admin Routes */}
             <Route path="/admin" element={<AdminDashboard />} /> 
           </Route>
 
