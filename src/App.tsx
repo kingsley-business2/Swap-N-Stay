@@ -3,36 +3,41 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
+
+// ⚠️ Check these paths. If you still get TS2307 errors, the files are missing or paths are wrong.
 import Navbar from './components/layout/Navbar'; 
 import Footer from './components/layout/Footer';
 
-// Pages
+// Pages - ⚠️ Check these paths.
 import Marketplace from './pages/Marketplace';
-import MyListings from './pages/MyListings'; // Assuming you added this
-import Dashboard from './pages/Dashboard'; // User Dashboard
+import MyListings from './pages/MyListings'; 
+import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
-import SignIn from './pages/SignIn'; // Your sign-in/auth page
-import SignUp from './pages/SignUp'; // Your sign-up page
-import Profile from './pages/Profile'; // Your profile settings page
-import NotFound from './pages/NotFound'; // Create this simple 404 page
+import SignIn from './pages/SignIn'; 
+import SignUp from './pages/SignUp'; 
+import Profile from './pages/Profile'; 
+import NotFound from './pages/NotFound'; 
 
 // Components
-import PrivateRoute from './components/routing/PrivateRoute'; // New component
+import PrivateRoute from './components/routing/PrivateRoute'; 
 
 // --------------------------------------------------------------------------------
 
 // Component to handle redirection logic after sign-in
-const ConditionalSignInRoute: React.FC = ({ children }) => {
+// ⭐ FIX: Add the 'children' prop definition to clear TS2339/TS2559 errors
+interface ConditionalSignInRouteProps {
+  children: React.ReactNode;
+}
+
+const ConditionalSignInRoute: React.FC<ConditionalSignInRouteProps> = ({ children }) => {
   const { isAuthenticated } = useAuth();
   
-  // ⭐ FIX for "no automatic marketplace access right after signing in"
-  // If the user is authenticated, redirect them directly to the Marketplace.
   if (isAuthenticated) {
     return <Navigate to="/marketplace" replace />;
   }
 
-  // Otherwise, render the sign-in page content (children)
-  return children as React.ReactElement;
+  // Render the children (the SignIn component)
+  return <>{children}</>;
 };
 
 // --------------------------------------------------------------------------------
@@ -55,22 +60,19 @@ const AppContent: React.FC = () => {
               </ConditionalSignInRoute>
             } 
           />
-          <Route path="/signup" element={<SignUp />} />
+          <Route path="/signup" element={<SignUp />} element={<SignUp />} />
 
           {/* Core App Routes */}
           <Route path="/marketplace" element={<Marketplace />} />
           
           {/* Protected Routes (Requires Auth) */}
           <Route element={<PrivateRoute />}>
-            {/* User Dashboard is the main logged-in landing page */}
             <Route path="/dashboard" element={<Dashboard />} /> 
-            {/* My Listings page */}
             <Route path="/my-listings" element={<MyListings />} /> 
-            {/* User Profile/Settings */}
             <Route path="/profile" element={<Profile />} /> 
           </Route>
 
-          {/* Admin Protected Routes (You'll need a way to check isAdmin within AdminDashboard) */}
+          {/* Admin Protected Routes */}
           <Route element={<PrivateRoute />}>
              <Route path="/admin" element={<AdminDashboard />} /> 
           </Route>
