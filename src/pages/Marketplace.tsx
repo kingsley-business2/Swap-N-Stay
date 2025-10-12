@@ -1,4 +1,4 @@
-// ========================== src/pages/Marketplace.tsx (FINAL FIX: Specify Relationship) ==========================
+// ========================== src/pages/Marketplace.tsx (FINAL FIX: Remove Comment from Select String) ==========================
 import React, { useState, useEffect } from 'react';
 import PostProductModal from '../components/marketplace/PostProductModal';
 import { supabase } from '../api/supabase';
@@ -18,12 +18,12 @@ const Marketplace: React.FC = () => {
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      // ⭐ CRITICAL FIX: Explicitly specify the foreign key to use for embedding (user_id)
+      // ⭐ FIX: Removed the JavaScript comment from inside the string literal
       const { data, error } = await supabase
         .from('listings') 
         .select(`
           *,
-          profiles!user_id(username, name, tier, location) // <--- CHANGED HERE
+          profiles!user_id(username, name, tier, location) 
         `) 
         .order('created_at', { ascending: false });
 
