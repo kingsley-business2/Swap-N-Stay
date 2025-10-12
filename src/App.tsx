@@ -1,125 +1,96 @@
-// ========================== src/App.tsx (FINAL CORRECTED VERSION) ==========================
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+// ========================== src/App.tsx (FINAL CONSOLIDATED VERSION) ==========================
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { supabase } from './api/supabase'; // Used in AuthCallback
 
-// Components (Using your actual paths/names)
-import Header from './components/Header'; // <-- NEW/Replacement Header
-import Footer from './components/Footer'; 
-import PrivateRoute from './components/routing/PrivateRoute'; 
+// Components
+import Header from './components/Header';
+import Footer from './components/Footer'; // Corrected path
+import PrivateRoute from './components/routing/PrivateRoute';
+import AuthRedirect from './components/AuthRedirect'; // <-- Using your component
 
 // Pages
 import Marketplace from './pages/Marketplace';
 import MyListings from './pages/MyListings'; 
 import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
-import Login from './pages/Login'; // <-- Renamed from SignIn
+import Login from './pages/Login'; // Corrected name
 import Signup from './pages/Signup';
 import Profile from './pages/Profile'; 
-import SetupProfile from './pages/SetupProfile'; // <-- New setup route
-import ErrorPage from './pages/ErrorPage'; // <-- Renamed from NotFound
-import AuthCallback from './pages/AuthCallback'; // <-- REQUIRED for email confirmation flow
+import SetupProfile from './pages/SetupProfile'; 
+import ErrorPage from './pages/ErrorPage'; // Corrected name
 
 
 // --------------------------------------------------------------------------------
 
-// Component to handle redirection logic after sign-in/signup
-interface AuthRedirectRouteProps {
-  children: React.ReactNode;
-}
-
-const AuthRedirectRoute: React.FC<AuthRedirectRouteProps> = ({ children }) => {
-  const { isAuthenticated, profile, isAuthChecked } = useAuth();
-
-  if (!isAuthChecked) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <span className="loading loading-spinner loading-lg text-primary"></span>
-      </div>
-    );
-  }
-
-  if (isAuthenticated) {
-    // ⭐ FIX: If user is logged in but hasn't completed their profile, send them to setup
-    if (!profile?.username && profile?.id) { 
-       return <Navigate to="/setup-profile" replace />;
-    }
-    
-    // Otherwise, redirect them directly to the Marketplace.
-    return <Navigate to="/marketplace" replace />;
-  }
-
-  // Render the sign-in/sign-up page content
-  return <>{children}</>;
-};
-
-// --------------------------------------------------------------------------------
-
-// You must create this file in src/pages/AuthCallback.tsx
+// Simplified AuthCallback logic to trigger re-check and redirect
 const AuthCallback: React.FC = () => {
   const navigate = useNavigate();
+  const { isAuthChecked } = useAuth(); // Monitor auth state change
+
   useEffect(() => {
-    // This will be called by Supabase after confirmation/login.
-    // It should handle session setting and redirect.
-    // For simplicity, we redirect to the setup-profile route after a moment.
-    setTimeout(() => {
-      navigate('/setup-profile', { replace: true });
-    }, 100);
-  }, [navigate]);
-  return <div className="p-8 text-center">Finalizing login...</div>;
+    // If the session is detected and auth is checked, redirect to the landing page
+    if (isAuthChecked) {
+      navigate('/', { replace: true });
+    }
+    
+    // Listen for auth events (needed for email confirmation links)
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+        if (session && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
+            navigate('/', { replace: true });
+        }
+    });
+
+    return () => {
+        authListener.subscription.unsubscribe();
+    };
+  }, [isAuthChecked, navigate]);
+
+  return (
+    <div className="flex items-center justify-center min-h-screen p-8">
+        <span className="loading loading-dots loading-lg text-primary"></span>
+        <p className="mt-4 text-gray-500">Processing authentication...</p>
+    </div>
+  );
 };
 
-// --------------------------------------------------------------------------------
 
+// --------------------------------------------------------------------------------
 
 const AppContent: React.FC = () => {
   return (
     <div className="flex flex-col min-h-screen">
-      <Header /> {/* Using Header instead of Navbar */}
+      <Header />
       <main className="flex-grow">
         <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={<Navigate to="/marketplace" replace />} />
+          {/* Landing Page Route - Handles all login/auth redirection */}
+          <Route path="/" element={<AuthRedirect />} /> 
           
-          {/* Supabase Email Confirmation Callback */}
+          {/* Auth Pages */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
           
-          {/* Conditional Auth Routes (Redirects if logged in) */}
-          <Route 
-            path="/login" 
-            element={
-              <AuthRedirectRoute>
-                <Login />
-              </AuthRedirectRoute>
-            } 
-          />
-          <Route 
-            path="/signup" 
-            element={
-              <AuthRedirectRoute>
-                <Signup />
-              </AuthRedirectRoute>
-            } 
-          />
-
           {/* Core App Routes */}
           <Route path="/marketplace" element={<Marketplace />} />
           
           {/* Protected Routes (Requires Auth) */}
           <Route element={<PrivateRoute />}>
-            {/* Profile Setup is a mandatory step after initial login/signup */}
+            {/* Must be completed by all new users */}
             <Route path="/setup-profile" element={<SetupProfile />} /> 
             
             {/* Standard User Routes */}
             <Route path="/dashboard" element={<Dashboard />} /> 
             <Route path="/my-listings" element={<MyListings />} /> 
             <Route path="/profile" element={<Profile />} /> 
-          </Route>
 
-          {/* Admin Protected Routes */}
-          <Route element={<PrivateRoute />}>
-             <Route path="/admin" element={<AdminDashboard />} /> 
+            {/* If the 'Post Goods/Services' button uses a route instead of a modal: */}
+            {/* <Route path="/post" element={<PostPage />} /> */}
+            
+            {/* Admin Routes */}
+            <Route path="/admin" element={<AdminDashboard />} /> 
           </Route>
 
           {/* Catch-all 404 Route */}
