@@ -1,11 +1,10 @@
-// ========================== src/App.tsx (Final Corrected Imports and Structure) ==========================
-import React, { useEffect } from 'react'; // <-- ADDED useEffect
+// ========================== src/App.tsx (FINAL CLEAN VERSION) ==========================
+import React, { useEffect } from 'react';
 import { 
   BrowserRouter as Router, 
   Routes, 
   Route, 
-  Navigate, // <-- Ensure this is used
-  useNavigate // <-- ADDED useNavigate
+  useNavigate 
 } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -24,29 +23,25 @@ import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import Login from './pages/Login'; 
 import Signup from './pages/Signup';
-import Profile from './pages/Profile'; // ⚠️ You must create this file
+import Profile from './pages/Profile'; 
 import SetupProfile from './pages/SetupProfile'; 
 import ErrorPage from './pages/ErrorPage'; 
-import AuthCallback from './pages/AuthCallback'; // <-- IMPORTED and used here
+// REMOVED: import AuthCallback from './pages/AuthCallback'; // CONFLICTING IMPORT
 
 // --------------------------------------------------------------------------------
 
-// Simplified AuthCallback logic (Moved outside AppContent for clean imports)
-// NOTE: We MUST import AuthCallback from its file, not define it locally.
+// Simplified AuthCallback logic (Defined locally for the route)
 const AuthCallbackRoute: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthChecked } = useAuth(); 
 
   useEffect(() => {
-    // Only here to explicitly handle redirects after auth events
     const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
         if (session && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
-            // Use AuthRedirect logic on the root page
             navigate('/', { replace: true });
         }
     });
 
-    // Clean up the listener
     return () => {
         authListener.subscription.unsubscribe();
     };
@@ -75,7 +70,7 @@ const AppContent: React.FC = () => {
           {/* Auth Pages */}
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
-          <Route path="/auth/callback" element={<AuthCallbackRoute />} /> // <-- Using the component
+          <Route path="/auth/callback" element={<AuthCallbackRoute />} /> 
           
           {/* Core App Routes */}
           <Route path="/marketplace" element={<Marketplace />} />
