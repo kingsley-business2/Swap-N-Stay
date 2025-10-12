@@ -1,4 +1,4 @@
-// src/components/Header.tsx
+// ========================== src/components/Header.tsx (UPDATED) ==========================
 
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -20,6 +20,7 @@ const Header: React.FC = () => {
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.blur();
     }
+    // Assuming the logout function handles the actual sign-out logic (supabase.auth.signOut())
     await logout();
   };
 
@@ -35,7 +36,7 @@ const Header: React.FC = () => {
       </div>
       
       <div className="flex-none">
-        {/* Updated button text for agricultural marketplace */}
+        {/* Button to post a product - assumes /post route exists or modal is triggered */}
         {isAuthenticated && (
             <button 
                 onClick={() => handleNavigation('/post')}
@@ -73,12 +74,21 @@ const Header: React.FC = () => {
                   Dashboard
                 </button>
               </li>
+              {/* ⭐ ADDED: Explicit link to My Listings */}
               <li>
                 <button 
-                  onClick={() => handleNavigation('/explore')}
-                  className={`w-full text-left ${location.pathname === '/explore' ? 'active' : ''}`}
+                  onClick={() => handleNavigation('/my-listings')}
+                  className={`w-full text-left ${location.pathname === '/my-listings' ? 'active' : ''}`}
                 >
-                  Explore
+                  My Listings
+                </button>
+              </li>
+              <li>
+                <button 
+                  onClick={() => handleNavigation('/marketplace')} // ⭐ CORRECTED: 'Explore' points to main marketplace
+                  className={`w-full text-left ${location.pathname === '/marketplace' ? 'active' : ''}`}
+                >
+                  Explore Marketplace
                 </button>
               </li>
               {isAdmin && ( 
@@ -91,6 +101,15 @@ const Header: React.FC = () => {
                   </button>
                 </li>
               )}
+              {/* Optional: Add profile/settings page link */}
+              <li>
+                <button 
+                  onClick={() => handleNavigation('/profile')}
+                  className={`w-full text-left ${location.pathname === '/profile' ? 'active' : ''}`}
+                >
+                  Profile Settings
+                </button>
+              </li>
               <li><button onClick={handleLogout} className="w-full text-left">Logout</button></li>
             </ul>
           </div>
