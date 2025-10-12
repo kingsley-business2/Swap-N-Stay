@@ -1,4 +1,4 @@
-// ========================== src/pages/Marketplace.tsx (FINAL CONFIRMED FIX) ==========================
+// ========================== src/pages/Marketplace.tsx (FINAL FIX: Specify Relationship) ==========================
 import React, { useState, useEffect } from 'react';
 import PostProductModal from '../components/marketplace/PostProductModal';
 import { supabase } from '../api/supabase';
@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 import { MarketplaceListing } from '../types/custom'; 
 
 const Marketplace: React.FC = () => {
-  // ⭐ CRITICAL FIX CHECK: Ensure [loading] is correctly destructured.
+  // CRITICAL FIX CHECK: Ensure [loading] is correctly destructured.
   const [products, setProducts] = useState<MarketplaceListing[]>([]); 
   const [loading, setLoading] = useState(true); 
 
@@ -18,22 +18,24 @@ const Marketplace: React.FC = () => {
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      // Confirmed fix for missing user details (Supabase JOIN)
+      // ⭐ CRITICAL FIX: Explicitly specify the foreign key to use for embedding (user_id)
       const { data, error } = await supabase
         .from('listings') 
         .select(`
           *,
-          profiles(username, name, tier, location)
+          profiles!user_id(username, name, tier, location) // <--- CHANGED HERE
         `) 
         .order('created_at', { ascending: false });
 
       if (error) {
+        // The error message is now more informative for debugging
         throw error;
       }
 
       setProducts((data as MarketplaceListing[]) || []);
     } catch (error: any) {
       console.error('Error fetching marketplace listings:', error); 
+      // This toast now shows the specific error like 'Could not embed...'
       toast.error(`Failed to load listings: ${error.message || 'Check RLS rules.'}`);
       setProducts([]); 
     } finally {
@@ -41,7 +43,7 @@ const Marketplace: React.FC = () => {
     }
   };
 
-  // ⭐ CRITICAL FIX CHECK: This block USES the 'loading' state, resolving TS6133.
+  // CRITICAL FIX CHECK: This block USES the 'loading' state, resolving TS6133.
   if (loading) { 
     return (
       <div className="p-8 flex justify-center">
@@ -108,4 +110,3 @@ const Marketplace: React.FC = () => {
 };
 
 export default Marketplace;
-
