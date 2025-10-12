@@ -3,11 +3,12 @@ import React, { useState, useEffect } from 'react';
 import PostProductModal from '../components/marketplace/PostProductModal';
 import { supabase } from '../api/supabase';
 import toast from 'react-hot-toast';
-import { Listing } from '../types/custom'; // <--- FIX HERE: Changed 'Product' to 'Listing'
+// ⭐ UPDATE: Import the new MarketplaceListing type
+import { Listing, MarketplaceListing } from '../types/custom'; 
 
 const Marketplace: React.FC = () => {
-  // Use 'Listing' type for state
-  const [products, setProducts] = useState<Listing[]>([]); 
+  // ⭐ UPDATE: Use 'MarketplaceListing' type for state
+  const [products, setProducts] = useState<MarketplaceListing[]>([]); 
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -17,17 +18,22 @@ const Marketplace: React.FC = () => {
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      // Correctly querying the 'listings' table
+      // ⭐ CRITICAL FIX: Add 'profiles(username, name, tier, location)' to select statement 
+      // to join the user data.
       const { data, error } = await supabase
         .from('listings') 
-        .select('*') 
+        .select(`
+          *,
+          profiles(username, name, tier, location)
+        `) 
         .order('created_at', { ascending: false });
 
       if (error) {
         throw error;
       }
 
-      setProducts(data || []);
+      // ⭐ Cast the data to the correct type
+      setProducts((data as MarketplaceListing[]) || []);
     } catch (error: any) {
       console.error('Error fetching marketplace listings:', error); 
       toast.error(`Failed to load listings: ${error.message || 'Check RLS rules.'}`);
@@ -79,6 +85,18 @@ const Marketplace: React.FC = () => {
               <h3 className="font-bold">{product.title}</h3> 
               <p className="text-sm text-gray-600 truncate">{product.description}</p>
               <p className="mt-2 text-lg font-semibold">{formatPriceGHC(product.price)}</p>
+              
+              {/* ⭐ FIX: Display user name and tier (if profiles data exists) */}
+              {product.profiles && (
+                <div className="mt-4 text-xs text-gray-500">
+                  <span>Posted by: {product.profiles.name || product.profiles.username || 'Anonymous'}</span>
+                  <span className={`badge ml-2 badge-sm badge-outline ${product.profiles.tier === 'premium' ? 'badge-warning' : product.profiles.tier === 'gold' ? 'badge-accent' : ''}`}>
+                    {product.profiles.tier.toUpperCase()}
+                  </span>
+                </div>
+              )}
+              {/* END FIX */}
+              
             </div>
           ))
         )}
