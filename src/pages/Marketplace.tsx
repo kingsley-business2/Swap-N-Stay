@@ -1,13 +1,13 @@
-// ========================== src/pages/Marketplace.tsx (FINAL FIX) ==========================
+// ========================== src/pages/Marketplace.tsx (FINAL CORRECTED CONTENT) ==========================
 import React, { useState, useEffect } from 'react';
 import PostProductModal from '../components/marketplace/PostProductModal';
 import { supabase } from '../api/supabase';
 import toast from 'react-hot-toast';
-// ⭐ UPDATE: Import the new MarketplaceListing type
-import { Listing, MarketplaceListing } from '../types/custom'; 
+// ⭐ FIX: Removed unused 'Listing' import to resolve TS6133 warning.
+import { MarketplaceListing } from '../types/custom'; 
 
 const Marketplace: React.FC = () => {
-  // ⭐ UPDATE: Use 'MarketplaceListing' type for state
+  // Use 'MarketplaceListing' type for state
   const [products, setProducts] = useState<MarketplaceListing[]>([]); 
   const [loading, setLoading] = useState(true);
 
@@ -18,8 +18,7 @@ const Marketplace: React.FC = () => {
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      // ⭐ CRITICAL FIX: Add 'profiles(username, name, tier, location)' to select statement 
-      // to join the user data.
+      // CRITICAL FIX: Add 'profiles(...)' to select statement to join user data.
       const { data, error } = await supabase
         .from('listings') 
         .select(`
@@ -32,7 +31,7 @@ const Marketplace: React.FC = () => {
         throw error;
       }
 
-      // ⭐ Cast the data to the correct type
+      // Cast the data to the correct type
       setProducts((data as MarketplaceListing[]) || []);
     } catch (error: any) {
       console.error('Error fetching marketplace listings:', error); 
@@ -86,7 +85,7 @@ const Marketplace: React.FC = () => {
               <p className="text-sm text-gray-600 truncate">{product.description}</p>
               <p className="mt-2 text-lg font-semibold">{formatPriceGHC(product.price)}</p>
               
-              {/* ⭐ FIX: Display user name and tier (if profiles data exists) */}
+              {/* FIX: Display user name and tier (if profiles data exists) */}
               {product.profiles && (
                 <div className="mt-4 text-xs text-gray-500">
                   <span>Posted by: {product.profiles.name || product.profiles.username || 'Anonymous'}</span>
