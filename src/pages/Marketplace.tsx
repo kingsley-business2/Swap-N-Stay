@@ -1,13 +1,11 @@
-// ========================== src/pages/Marketplace.tsx (FINAL FIX: Remove Comment from Select String) ==========================
+// ========================== src/pages/Marketplace.tsx (FINAL REPRODUCED CONTENT) ==========================
 import React, { useState, useEffect } from 'react';
 import PostProductModal from '../components/marketplace/PostProductModal';
 import { supabase } from '../api/supabase';
 import toast from 'react-hot-toast';
-// FIX: Only importing MarketplaceListing to clean up the unused 'Listing' import
-import { MarketplaceListing } from '../types/custom'; 
+import { MarketplaceListing } from '../types/custom'; // Now points to the new file
 
 const Marketplace: React.FC = () => {
-  // CRITICAL FIX CHECK: Ensure [loading] is correctly destructured.
   const [products, setProducts] = useState<MarketplaceListing[]>([]); 
   const [loading, setLoading] = useState(true); 
 
@@ -18,7 +16,9 @@ const Marketplace: React.FC = () => {
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      // ⭐ FIX: Removed the JavaScript comment from inside the string literal
+      // The SQL query is correct for fetching related profiles using the listings.user_id FK.
+      // Note: The structure 'profiles!user_id' uses the FK name to resolve the join, 
+      // but the resulting key in the JSON data will typically just be 'profiles'.
       const { data, error } = await supabase
         .from('listings') 
         .select(`
@@ -28,14 +28,12 @@ const Marketplace: React.FC = () => {
         .order('created_at', { ascending: false });
 
       if (error) {
-        // The error message is now more informative for debugging
         throw error;
       }
 
       setProducts((data as MarketplaceListing[]) || []);
     } catch (error: any) {
       console.error('Error fetching marketplace listings:', error); 
-      // This toast now shows the specific error like 'Could not embed...'
       toast.error(`Failed to load listings: ${error.message || 'Check RLS rules.'}`);
       setProducts([]); 
     } finally {
@@ -43,7 +41,6 @@ const Marketplace: React.FC = () => {
     }
   };
 
-  // CRITICAL FIX CHECK: This block USES the 'loading' state, resolving TS6133.
   if (loading) { 
     return (
       <div className="p-8 flex justify-center">
@@ -51,11 +48,11 @@ const Marketplace: React.FC = () => {
       </div>
     );
   }
-  // End of CRITICAL FIX CHECK
 
   // Helper to format price to GHC
   const formatPriceGHC = (price: number | null | undefined): string => {
     if (price === null || price === undefined) return 'N/A';
+    // Using 'en-GH' locale for GHS currency format
     return new Intl.NumberFormat('en-GH', {
         style: 'currency',
         currency: 'GHS',
@@ -84,6 +81,7 @@ const Marketplace: React.FC = () => {
         ) : (
           products.map(product => (
             <div key={product.id} className="card bg-base-200 shadow-md p-6">
+              {/* Assuming your DB column is 'title' as used here */}
               <h3 className="font-bold">{product.title}</h3> 
               <p className="text-sm text-gray-600 truncate">{product.description}</p>
               <p className="mt-2 text-lg font-semibold">{formatPriceGHC(product.price)}</p>
@@ -91,9 +89,10 @@ const Marketplace: React.FC = () => {
               {/* Fix for displaying user data */}
               {product.profiles && (
                 <div className="mt-4 text-xs text-gray-500">
+                  {/* Using 'product.profiles.name' first, then 'username' */}
                   <span>Posted by: {product.profiles.name || product.profiles.username || 'Anonymous'}</span>
                   <span className={`badge ml-2 badge-sm badge-outline ${product.profiles.tier === 'premium' ? 'badge-warning' : product.profiles.tier === 'gold' ? 'badge-accent' : ''}`}>
-                    {product.profiles.tier.toUpperCase()}
+                    {product.profiles.tier ? product.profiles.tier.toUpperCase() : 'FREE'}
                   </span>
                 </div>
               )}
