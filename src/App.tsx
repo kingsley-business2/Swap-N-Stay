@@ -26,14 +26,13 @@ import Signup from './pages/Signup';
 import Profile from './pages/Profile'; 
 import SetupProfile from './pages/SetupProfile'; 
 import ErrorPage from './pages/ErrorPage'; 
-// NOTE: Conflicting import of AuthCallback is now removed/managed locally
 
 // --------------------------------------------------------------------------------
 
 // Component that handles redirection after the Supabase auth flow
 const AuthCallbackRoute: React.FC = () => {
   const navigate = useNavigate();
-  // FIX: Destructure nothing, as the properties were unused (resolves TS6133)
+  // ⭐ FIX: Removed unused 'isAuthChecked' from destructuring
   useAuth(); 
 
   useEffect(() => {
