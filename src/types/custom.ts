@@ -43,7 +43,6 @@ export interface Listing {
 
 // Define the MarketplaceListing interface (includes joined profile data)
 export interface MarketplaceListing extends Listing {
-  // Uses the corrected Profile type
   profiles: Pick<Profile, 'username' | 'name' | 'tier' | 'location'> | null;
 }
 
