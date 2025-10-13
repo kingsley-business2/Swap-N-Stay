@@ -1,4 +1,4 @@
-// ========================== src/types/custom.ts (FINAL EXPORTED TYPES) ==========================
+// ========================== src/types/custom.ts (FINAL CONFIRMED TYPES) ==========================
 
 // Define the Tier union type
 export type Tier = 'free' | 'premium' | 'gold';
@@ -24,7 +24,7 @@ export interface Listing {
   user_id: string;
   category_id?: string; 
   title: string; 
-  name?: string; // Optional: If the DB uses 'name' instead of 'title' for display
+  name?: string; 
   description: string;
   quantity?: number; 
   price: number;
@@ -42,13 +42,11 @@ export interface Listing {
 }
 
 // Define the MarketplaceListing interface (includes joined profile data)
-// This is used in Marketplace.tsx when fetching the join query.
 export interface MarketplaceListing extends Listing {
-  // Uses Pick to define only the fields needed from the joined 'profiles' table
   profiles: Pick<UserProfile, 'username' | 'name' | 'tier' | 'location'> | null;
 }
 
-// Simplified type for a product summary (used for general exploration/search results)
+// Simplified type for a product summary
 export interface ProductSummary {
   id: string;
   name: string;
