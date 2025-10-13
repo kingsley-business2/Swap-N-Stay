@@ -1,10 +1,10 @@
-// ========================== src/types/custom.ts (FINAL CONFIRMED TYPES) ==========================
+// ========================== src/types/custom.ts (CONSOLIDATED & CORRECTED) ==========================
 
-// Define the Tier union type
+// Define the Tier union type - CENTRAL SOURCE OF TRUTH
 export type Tier = 'free' | 'premium' | 'gold';
 
-// Define the User Profile interface
-export interface UserProfile {
+// Define the User Profile interface - RENAMED from UserProfile to Profile
+export interface Profile {
   id: string; // uuid from auth.users
   email?: string; 
   username: string | null; 
@@ -43,7 +43,8 @@ export interface Listing {
 
 // Define the MarketplaceListing interface (includes joined profile data)
 export interface MarketplaceListing extends Listing {
-  profiles: Pick<UserProfile, 'username' | 'name' | 'tier' | 'location'> | null;
+  // Uses the corrected Profile type
+  profiles: Pick<Profile, 'username' | 'name' | 'tier' | 'location'> | null;
 }
 
 // Simplified type for a product summary
