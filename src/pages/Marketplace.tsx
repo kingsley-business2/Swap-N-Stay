@@ -1,9 +1,9 @@
-// ========================== src/pages/Marketplace.tsx (FINAL REPRODUCED CONTENT) ==========================
+// ========================== src/pages/Marketplace.tsx (FINAL FIX: Foreign Key Disambiguation) ==========================
 import React, { useState, useEffect } from 'react';
 import PostProductModal from '../components/marketplace/PostProductModal';
 import { supabase } from '../api/supabase';
 import toast from 'react-hot-toast';
-import { MarketplaceListing } from '../types/custom'; // Now points to the new file
+import { MarketplaceListing } from '../types/custom';
 
 const Marketplace: React.FC = () => {
   const [products, setProducts] = useState<MarketplaceListing[]>([]); 
@@ -16,14 +16,14 @@ const Marketplace: React.FC = () => {
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      // The SQL query is correct for fetching related profiles using the listings.user_id FK.
-      // Note: The structure 'profiles!user_id' uses the FK name to resolve the join, 
-      // but the resulting key in the JSON data will typically just be 'profiles'.
+      // ⭐ CRITICAL FIX: Changed 'profiles!user_id' to 'profiles:user_id' 
+      // This explicitly tells Supabase to use the 'user_id' column in the 'listings'
+      // table to join to the 'profiles' table, solving the 'more than one relationship' error.
       const { data, error } = await supabase
         .from('listings') 
         .select(`
           *,
-          profiles!user_id(username, name, tier, location) 
+          profiles:user_id(username, name, tier, location) 
         `) 
         .order('created_at', { ascending: false });
 
