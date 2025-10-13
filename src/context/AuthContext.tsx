@@ -1,19 +1,14 @@
 // ========================== src/context/AuthContext.tsx (FINAL FIX) ==========================
 import { createContext, useState, useEffect, useContext, ReactNode } from 'react';
 import { supabase } from '../api/supabase';
-// CRITICAL FIX 1: Removed unused type imports (LoginCredentials, RegisterCredentials)
-// and imported all necessary types from the correct location.
-import { User, UserProfile } from '../types/auth'; 
+// Import all necessary types from auth.ts
+import { User, Profile, LoginCredentials, RegisterCredentials } from '../types/auth'; 
 import { Session } from '@supabase/supabase-js';
 
-// Define AuthContextType relying on imported User/UserProfile and local types
-// NOTE: LoginCredentials and RegisterCredentials must be defined in '../types/auth'
-interface LoginCredentials { email: string; password: string; }
-interface RegisterCredentials { email: string; password: string; name?: string; } // Added name as optional for profile setup
-
+// Define AuthContextType relying on imported User/Profile
 interface AuthContextType {
   user: User | null;
-  profile: UserProfile | null;
+  profile: Profile | null; // Uses corrected Profile type
   isAuthenticated: boolean;
   isAdmin: boolean;
   isLoading: boolean;
@@ -43,27 +38,25 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null); // Uses corrected Profile type
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthChecked, setIsAuthChecked] = useState(false);
   
-  const fetchProfile = async (userId: string): Promise<UserProfile | null> => {
+  const fetchProfile = async (userId: string): Promise<Profile | null> => { // Uses corrected Profile type
     const { data: profileData, error } = await supabase
       .from('profiles')
-      // Ensure 'username' is selected if it exists in your DB schema
       .select('id, name, tier, is_admin, username') 
       .eq('id', userId)
       .single();
     
-    // PGRST116 means "not found", which is expected for a user who hasn't set up their profile yet.
+    // PGRST116 means "not found," which is expected for a user who hasn't set up their profile.
     if (error && error.code !== 'PGRST116') {
       console.error('Error fetching profile:', error);
       return null;
     }
 
     if (profileData) {
-      // Cast the fetched data to UserProfile as expected by the caller
-      return profileData as UserProfile;
+      return profileData as Profile;
     }
     return null;
   };
@@ -79,7 +72,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             const fullUser: User = { 
                 id: currentSession.user.id, 
                 email: currentSession.user.email || '', 
-                // Ensure the User type is defined to handle the profile structure
                 profile: userProfile 
             };
 
@@ -143,14 +135,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       throw error;
     }
 
-    // 2. CRITICAL FIX 2: Only insert essential fields into the profiles table.
-    // The username must be unique, so it is safer to set it to NULL
-    // and rely on the /setup-profile page to handle the unique check.
+    // 2. CRITICAL FIX: Only insert essential fields into the profiles table.
+    // username is set to null to force redirect to /setup-profile.
     if (data.user) {
-        // Only set required FKs and safe defaults. 'name' is optional here.
         await supabase.from('profiles').insert({ 
             id: data.user.id, 
-            name: credentials.name || null, // Use provided name, or null
+            name: credentials.name || null, 
             tier: 'free',
             is_admin: false,
             username: null, // Force null, to be set on /setup-profile
