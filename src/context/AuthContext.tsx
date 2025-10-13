@@ -1,14 +1,14 @@
-// ========================== src/context/AuthContext.tsx (FINAL FIX) ==========================
+// ========================== src/context/AuthContext.tsx (FINAL VERSION) ==========================
 import { createContext, useState, useEffect, useContext, ReactNode } from 'react';
 import { supabase } from '../api/supabase';
-// Import all necessary types from auth.ts
+// Imports correct types
 import { User, Profile, LoginCredentials, RegisterCredentials } from '../types/auth'; 
 import { Session } from '@supabase/supabase-js';
 
 // Define AuthContextType relying on imported User/Profile
 interface AuthContextType {
   user: User | null;
-  profile: Profile | null; // Uses corrected Profile type
+  profile: Profile | null;
   isAuthenticated: boolean;
   isAdmin: boolean;
   isLoading: boolean;
@@ -38,18 +38,17 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<Profile | null>(null); // Uses corrected Profile type
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthChecked, setIsAuthChecked] = useState(false);
   
-  const fetchProfile = async (userId: string): Promise<Profile | null> => { // Uses corrected Profile type
+  const fetchProfile = async (userId: string): Promise<Profile | null> => {
     const { data: profileData, error } = await supabase
       .from('profiles')
       .select('id, name, tier, is_admin, username') 
       .eq('id', userId)
       .single();
     
-    // PGRST116 means "not found," which is expected for a user who hasn't set up their profile.
     if (error && error.code !== 'PGRST116') {
       console.error('Error fetching profile:', error);
       return null;
@@ -68,7 +67,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         if (currentSession?.user) {
             const userProfile = await fetchProfile(currentSession.user.id);
             
-            // Build the User object using the imported type structure
             const fullUser: User = { 
                 id: currentSession.user.id, 
                 email: currentSession.user.email || '', 
@@ -95,7 +93,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
     );
 
-    // Initial check for session outside the listener for quick loading
     supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
         if (!isAuthChecked) {
             handleSession(initialSession);
@@ -124,7 +121,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const register = async (credentials: RegisterCredentials) => {
     setIsLoading(true);
     
-    // 1. Sign up the user in auth.users table
     const { data, error } = await supabase.auth.signUp({
       email: credentials.email,
       password: credentials.password,
@@ -135,15 +131,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       throw error;
     }
 
-    // 2. CRITICAL FIX: Only insert essential fields into the profiles table.
-    // username is set to null to force redirect to /setup-profile.
     if (data.user) {
         await supabase.from('profiles').insert({ 
             id: data.user.id, 
             name: credentials.name || null, 
             tier: 'free',
             is_admin: false,
-            username: null, // Force null, to be set on /setup-profile
+            username: null, 
         });
     }
     
