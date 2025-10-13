@@ -1,11 +1,11 @@
-// ========================== src/components/AuthRedirect.tsx (FIXED) ==========================
+// ========================== src/components/AuthRedirect.tsx (FINAL FIX) ==========================
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext'; 
-import { UserProfile } from '../types/custom'; // Ensure this type is imported
+// Use the new Profile type
+import { Profile } from '../types/auth'; 
 
 const AuthRedirect: React.FC = () => {
-  // Assuming useAuth now returns user, profile, isAuthenticated, and isAuthChecked
   const { user, profile, isAuthenticated, isAuthChecked } = useAuth();
   const navigate = useNavigate();
 
@@ -16,7 +16,8 @@ const AuthRedirect: React.FC = () => {
     }
 
     if (isAuthenticated) {
-      const userProfile = profile as UserProfile | null | undefined;
+      // Use the corrected Profile type
+      const userProfile = profile as Profile | null | undefined;
       
       // 2. CHECK: If authenticated but profile (specifically 'username') is null, redirect to setup
       if (userProfile && userProfile.username === null) {
@@ -32,7 +33,7 @@ const AuthRedirect: React.FC = () => {
 
   }, [user, profile, isAuthenticated, isAuthChecked, navigate]);
 
-  // Display a loading state while we wait for isAuthChecked
+  // Display a loading state while we wait for isAuthChecked (FIXES BLANK SCREEN)
   return (
     <div className="flex items-center justify-center min-h-screen p-8 flex-col">
       <span className="loading loading-spinner loading-lg text-primary"></span>
