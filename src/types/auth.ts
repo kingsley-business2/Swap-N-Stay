@@ -1,17 +1,16 @@
-// src/types/auth.ts
+// ========================== src/types/auth.ts (CORRECTED) ==========================
 
-// Step 1: Import the type locally (needed for the 'User' interface below)
-import type { UserProfile } from './custom'; 
+// Step 1: Import the Profile type locally 
+import type { Profile } from './custom'; 
 
-// Step 2: Re-export the type for other modules (AuthContext, Dashboard, etc.)
-// This resolves the TS2459 errors that plagued us before.
-export type { UserProfile } from './custom'; 
+// Step 2: Re-export the Profile type 
+export type { Profile } from './custom'; 
 
 export interface User {
     id: string;
     email: string;
-    // This line (now line 14) now correctly finds UserProfile via the import above.
-    profile: UserProfile | null; 
+    // Uses the corrected Profile name
+    profile: Profile | null; 
 }
 
 export interface LoginCredentials {
