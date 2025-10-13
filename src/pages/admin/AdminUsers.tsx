@@ -1,15 +1,16 @@
-// src/pages/admin/AdminUsers.tsx
-
+// ========================== src/pages/admin/AdminUsers.tsx (FINAL CORRECTION) ==========================
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../api/supabase';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
-import { UserProfile } from '../../types/auth'; // Importing the canonical type
+// ⭐ CRITICAL FIX: Change import from 'UserProfile' to 'Profile'
+import { Profile } from '../../types/auth'; 
 
 const AdminUsers: React.FC = () => {
   const { isAuthChecked: authChecked, isAdmin } = useAuth(); 
-  const [users, setUsers] = useState<UserProfile[]>([]);
+  // ⭐ FIX: Use the new Profile type
+  const [users, setUsers] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingUserId, setUpdatingUserId] = useState<string | null>(null);
 
@@ -24,11 +25,9 @@ const AdminUsers: React.FC = () => {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      // NOTE: Ensure the SELECT query fetches all fields required by UserProfile
       const { data, error } = await supabase
         .from('profiles')
-        // CRITICAL: We need to ensure we select all required fields. 
-        // For the Admin table, the most important fields are selected here.
+        // NOTE: The SELECT query is already correct, fetching all required fields.
         .select('id, email, username, tier, created_at, name, is_admin, phone_number, date_of_birth, location')
         .order('created_at', { ascending: false });
       
@@ -37,7 +36,8 @@ const AdminUsers: React.FC = () => {
       }
       
       if (data) {
-        setUsers(data as UserProfile[]);
+        // ⭐ FIX: Cast to Profile[]
+        setUsers(data as Profile[]);
       }
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -136,7 +136,6 @@ const AdminUsers: React.FC = () => {
                     <div className="avatar placeholder">
                       <div className="bg-neutral text-neutral-content rounded-full w-8">
                         <span className="text-xs">
-                          {/* CRITICAL FIX: Use optional chaining to safely access email or username (TS18048 fix) */}
                           {user.username?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || 'U'}
                         </span>
                       </div>
@@ -148,7 +147,6 @@ const AdminUsers: React.FC = () => {
                     </div>
                   </div>
                 </td>
-                {/* CRITICAL FIX: Safely display email */}
                 <td>{user.email ?? 'N/A'}</td>
                 <td>
                   <span className={getTierBadgeClass(user.tier)}>
