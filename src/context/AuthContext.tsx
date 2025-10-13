@@ -1,7 +1,6 @@
-// ========================== src/context/AuthContext.tsx (FINAL VERSION) ==========================
+// ========================== src/context/AuthContext.tsx (ROBUST FIX) ==========================
 import { createContext, useState, useEffect, useContext, ReactNode } from 'react';
 import { supabase } from '../api/supabase';
-// Imports correct types
 import { User, Profile, LoginCredentials, RegisterCredentials } from '../types/auth'; 
 import { Session } from '@supabase/supabase-js';
 
@@ -43,6 +42,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isAuthChecked, setIsAuthChecked] = useState(false);
   
   const fetchProfile = async (userId: string): Promise<Profile | null> => {
+    // Note: error code PGRST116 is 'No rows returned', which is handled as success (null profile)
     const { data: profileData, error } = await supabase
       .from('profiles')
       .select('id, name, tier, is_admin, username') 
@@ -64,25 +64,34 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const handleSession = async (currentSession: Session | null) => {
         setIsLoading(true);
         
-        if (currentSession?.user) {
-            const userProfile = await fetchProfile(currentSession.user.id);
-            
-            const fullUser: User = { 
-                id: currentSession.user.id, 
-                email: currentSession.user.email || '', 
-                profile: userProfile 
-            };
+        try {
+            if (currentSession?.user) {
+                const userProfile = await fetchProfile(currentSession.user.id);
+                
+                const fullUser: User = { 
+                    id: currentSession.user.id, 
+                    email: currentSession.user.email || '', 
+                    profile: userProfile 
+                };
 
-            setUser(fullUser);
-            setProfile(userProfile);
-            
-        } else {
-            setUser(null);
+                setUser(fullUser);
+                setProfile(userProfile);
+                
+            } else {
+                setUser(null);
+                setProfile(null);
+            }
+        } catch (error) {
+            // CRITICAL: Catch network or unhandled Supabase errors
+            console.error("CRITICAL AUTH FETCH ERROR:", error);
+            // On failure, clear user state and allow app to render as unauthenticated
+            setUser(null); 
             setProfile(null);
+        } finally {
+            // ALWAYS clear loading state and mark check as complete
+            setIsLoading(false);
+            setIsAuthChecked(true);
         }
-
-        setIsLoading(false);
-        setIsAuthChecked(true);
     };
 
     const { data: authListener } = supabase.auth.onAuthStateChange(
@@ -93,11 +102,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
     );
 
-    supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
-        if (!isAuthChecked) {
-            handleSession(initialSession);
-        }
-    });
+    // Initial session fetch with added error handling
+    supabase.auth.getSession()
+        .then(({ data: { session: initialSession } }) => {
+            if (!isAuthChecked) {
+                handleSession(initialSession);
+            }
+        })
+        .catch(error => {
+            console.error("Initial session fetch failed:", error);
+            handleSession(null); // Treat as signed out on failure
+        });
 
     return () => {
       authListener.subscription.unsubscribe();
@@ -132,6 +147,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
 
     if (data.user) {
+        // Must insert the profile immediately after signup
         await supabase.from('profiles').insert({ 
             id: data.user.id, 
             name: credentials.name || null, 
