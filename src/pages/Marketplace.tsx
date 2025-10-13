@@ -1,4 +1,4 @@
-// ========================== src/pages/Marketplace.tsx (FINAL FIX: Foreign Key Disambiguation) ==========================
+// ========================== src/pages/Marketplace.tsx (FINAL CRITICAL FIX) ==========================
 import React, { useState, useEffect } from 'react';
 import PostProductModal from '../components/marketplace/PostProductModal';
 import { supabase } from '../api/supabase';
@@ -16,9 +16,8 @@ const Marketplace: React.FC = () => {
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      // ⭐ CRITICAL FIX: Changed 'profiles!user_id' to 'profiles:user_id' 
-      // This explicitly tells Supabase to use the 'user_id' column in the 'listings'
-      // table to join to the 'profiles' table, solving the 'more than one relationship' error.
+      // ⭐ FINAL FIX: Changed to 'profiles:user_id' to explicitly use the foreign key
+      // and resolve the "more than one relationship" error.
       const { data, error } = await supabase
         .from('listings') 
         .select(`
@@ -81,23 +80,19 @@ const Marketplace: React.FC = () => {
         ) : (
           products.map(product => (
             <div key={product.id} className="card bg-base-200 shadow-md p-6">
-              {/* Assuming your DB column is 'title' as used here */}
               <h3 className="font-bold">{product.title}</h3> 
               <p className="text-sm text-gray-600 truncate">{product.description}</p>
               <p className="mt-2 text-lg font-semibold">{formatPriceGHC(product.price)}</p>
               
-              {/* Fix for displaying user data */}
+              {/* Defensive coding to prevent crashes if profile is null */}
               {product.profiles && (
                 <div className="mt-4 text-xs text-gray-500">
-                  {/* Using 'product.profiles.name' first, then 'username' */}
                   <span>Posted by: {product.profiles.name || product.profiles.username || 'Anonymous'}</span>
                   <span className={`badge ml-2 badge-sm badge-outline ${product.profiles.tier === 'premium' ? 'badge-warning' : product.profiles.tier === 'gold' ? 'badge-accent' : ''}`}>
                     {product.profiles.tier ? product.profiles.tier.toUpperCase() : 'FREE'}
                   </span>
                 </div>
               )}
-              {/* End fix */}
-              
             </div>
           ))
         )}
