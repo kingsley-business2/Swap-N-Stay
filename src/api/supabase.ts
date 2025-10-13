@@ -1,4 +1,4 @@
-// ========================== src/api/supabase.ts ==========================
+// ========================== src/api/supabase.ts (FINAL CONFIRMED VERSION) ==========================
 import { createClient } from '@supabase/supabase-js';
 
 // Validate environment variables
