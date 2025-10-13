@@ -1,9 +1,9 @@
-// src/pages/Dashboard.tsx
-
+// ========================== src/pages/Dashboard.tsx (FINAL CORRECTION) ==========================
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
-import { UserProfile } from '../types/auth'; // Ensure UserProfile is imported
+// ⭐ CRITICAL FIX: Change import from 'UserProfile' to 'Profile'
+import { Profile } from '../types/auth'; 
 
 const Dashboard: React.FC = () => {
   const { user, profile, isAuthChecked, isLoading } = useAuth();
@@ -27,7 +27,8 @@ const Dashboard: React.FC = () => {
     );
   }
   
-  const userProfile: UserProfile | null = profile;
+  // ⭐ FIX: Use the new Profile type
+  const userProfile: Profile | null = profile;
 
   const getTierBadgeClass = (tier: string) => {
     switch (tier) {
@@ -53,7 +54,6 @@ const Dashboard: React.FC = () => {
         </div>
         <div>
           <p className="font-semibold">Username:</p>
-          {/* FIX CHECK: This access is now valid because username is in UserProfile type */}
           <p className="text-gray-600">{userProfile?.username || userProfile?.name || 'N/A'}</p> 
         </div>
         <div>
