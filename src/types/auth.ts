@@ -1,15 +1,14 @@
-// ========================== src/types/auth.ts (CORRECTED) ==========================
+// ========================== src/types/auth.ts (FINAL CORRECTION) ==========================
 
 // Step 1: Import the Profile type locally 
 import type { Profile } from './custom'; 
 
-// Step 2: Re-export the Profile type 
+// Step 2: Re-export the type for other modules
 export type { Profile } from './custom'; 
 
 export interface User {
     id: string;
     email: string;
-    // Uses the corrected Profile name
     profile: Profile | null; 
 }
 
