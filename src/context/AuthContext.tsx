@@ -1,20 +1,23 @@
-// src/context/AuthContext.tsx
-
+// ========================== src/context/AuthContext.tsx (FINAL FIX) ==========================
 import { createContext, useState, useEffect, useContext, ReactNode } from 'react';
 import { supabase } from '../api/supabase';
-// CRITICAL FIX: Rely solely on the imported types. 
-// User, UserProfile, LoginCredentials, RegisterCredentials must be fully defined and exported from '../types/auth'.
-import { User, UserProfile, LoginCredentials, RegisterCredentials } from '../types/auth'; 
+// CRITICAL FIX 1: Removed unused type imports (LoginCredentials, RegisterCredentials)
+// and imported all necessary types from the correct location.
+import { User, UserProfile } from '../types/auth'; 
 import { Session } from '@supabase/supabase-js';
 
-// Define AuthContextType relying on imported User/UserProfile
+// Define AuthContextType relying on imported User/UserProfile and local types
+// NOTE: LoginCredentials and RegisterCredentials must be defined in '../types/auth'
+interface LoginCredentials { email: string; password: string; }
+interface RegisterCredentials { email: string; password: string; name?: string; } // Added name as optional for profile setup
+
 interface AuthContextType {
   user: User | null;
   profile: UserProfile | null;
   isAuthenticated: boolean;
   isAdmin: boolean;
   isLoading: boolean;
-  isAuthChecked: boolean; // Standardized name
+  isAuthChecked: boolean;
   login: (credentials: LoginCredentials) => Promise<void>;
   logout: () => Promise<void>;
   register: (credentials: RegisterCredentials) => Promise<void>;
@@ -26,7 +29,7 @@ const initialAuthContext: AuthContextType = {
   isAuthenticated: false,
   isAdmin: false,
   isLoading: true,
-  isAuthChecked: false, // Standardized name
+  isAuthChecked: false,
   login: () => Promise.resolve(),
   logout: () => Promise.resolve(),
   register: () => Promise.resolve(),
@@ -52,6 +55,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       .eq('id', userId)
       .single();
     
+    // PGRST116 means "not found", which is expected for a user who hasn't set up their profile yet.
     if (error && error.code !== 'PGRST116') {
       console.error('Error fetching profile:', error);
       return null;
@@ -75,6 +79,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             const fullUser: User = { 
                 id: currentSession.user.id, 
                 email: currentSession.user.email || '', 
+                // Ensure the User type is defined to handle the profile structure
                 profile: userProfile 
             };
 
@@ -98,6 +103,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
     );
 
+    // Initial check for session outside the listener for quick loading
     supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
         if (!isAuthChecked) {
             handleSession(initialSession);
@@ -125,6 +131,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const register = async (credentials: RegisterCredentials) => {
     setIsLoading(true);
+    
+    // 1. Sign up the user in auth.users table
     const { data, error } = await supabase.auth.signUp({
       email: credentials.email,
       password: credentials.password,
@@ -135,14 +143,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       throw error;
     }
 
+    // 2. CRITICAL FIX 2: Only insert essential fields into the profiles table.
+    // The username must be unique, so it is safer to set it to NULL
+    // and rely on the /setup-profile page to handle the unique check.
     if (data.user) {
+        // Only set required FKs and safe defaults. 'name' is optional here.
         await supabase.from('profiles').insert({ 
             id: data.user.id, 
-            name: credentials.name, 
+            name: credentials.name || null, // Use provided name, or null
             tier: 'free',
             is_admin: false,
-            // Assuming name is used as initial username for the profile setup
-            username: credentials.name, 
+            username: null, // Force null, to be set on /setup-profile
         });
     }
     
