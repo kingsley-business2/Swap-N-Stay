@@ -1,17 +1,39 @@
-// ========================== src/api/supabase.ts (TEMPORARY DEBUGGING) ==========================
+// ========================== src/api/supabase.ts (FINAL CONFIRMED VERSION) ==========================
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'DUMMY_URL'; // Add fallback
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'DUMMY_KEY'; // Add fallback
+// Validate environment variables
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-// TEMPORARILY REMOVE THE THROW BLOCK:
-// if (!supabaseUrl || !supabaseAnonKey) {
-//   throw new Error('Missing Supabase environment variables...');
-// }
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error(
+    'Missing Supabase environment variables. Please check your .env file.'
+  );
+}
 
-// Create Supabase client...
+// Create Supabase client with enhanced configuration
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  // ... rest of the config
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true,
+    flowType: 'pkce'
+  },
+  global: {
+    headers: {
+      'X-Client-Info': 'swap-n-stay@1.0.0'
+    }
+  }
 });
 
-// ... rest of the file
+// Optional: Add error logging for development
+if (import.meta.env.DEV) {
+  supabase
+    .channel('schema-changes')
+    .on(
+      'system',
+      { event: '*', schema: 'public' },
+      (payload) => console.log('Supabase schema change:', payload)
+    )
+    .subscribe();
+}
