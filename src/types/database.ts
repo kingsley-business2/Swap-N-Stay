@@ -1,12 +1,5 @@
-// ========================== src/types/database.ts ==========================
-export type Tier = 'free' | 'premium' | 'gold';
-
-export interface Profile {
-  id: string;
-  email: string;
-  tier: Tier;
-  is_admin: boolean;
-}
+// ========================== src/types/database.ts (CORRECTED) ==========================
+// Focus is now purely on database table structures not defined elsewhere.
 
 export interface Product {
   id: string;
