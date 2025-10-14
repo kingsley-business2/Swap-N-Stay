@@ -1,8 +1,7 @@
-// ========================== src/components/AuthRedirect.tsx (FINAL FIX) ==========================
+// ========================== src/components/AuthRedirect.tsx (CLEANED AND FINAL) ==========================
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext'; 
-// Use the new Profile type
 import { Profile } from '../types/auth'; 
 
 const AuthRedirect: React.FC = () => {
@@ -33,7 +32,7 @@ const AuthRedirect: React.FC = () => {
 
   }, [user, profile, isAuthenticated, isAuthChecked, navigate]);
 
-  // Display a loading state while we wait for isAuthChecked (FIXES BLANK SCREEN)
+  // Display a loading state while we wait for isAuthChecked 
   return (
     <div className="flex items-center justify-center min-h-screen p-8 flex-col">
       <span className="loading loading-spinner loading-lg text-primary"></span>
