@@ -1,12 +1,9 @@
-// ========================== src/utils/adStorage.ts (NEW FILE) ==========================
+// ========================== src/utils/adStorage.ts (FIXED: TS6133) ==========================
 import { supabase } from '../api/supabase';
-import { AdData } from './adRotation';
+// import { AdData } from './adRotation'; // Removed: This line caused the TS6133 error
 
-// 🎯 Hardcoded bucket name for fetching ad images
+// Hardcoded bucket name for fetching ad images
 const AD_BUCKET_NAME = 'ad_pictures1'; 
-
-// NOTE: The AdData array in AdBanner.tsx must now contain just the storage 'path', not the full URL.
-// Example AdData: { path: 'ads/ad1.png' }
 
 /**
  * Converts a storage path (e.g., 'ads/ad1.png') into a full public URL.
