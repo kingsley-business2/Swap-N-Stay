@@ -1,4 +1,4 @@
-// ========================== src/components/marketplace/PostProductModal.tsx (FINAL FIX: Table Name) ==========================
+// ========================== src/components/marketplace/PostProductModal.tsx (FINAL BUCKET FIX) ==========================
 import React, { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useTierLimits } from '../../hooks/useTierLimits';
@@ -38,16 +38,18 @@ const PostProductModal: React.FC<PostProductModalProps> = ({ onPostSuccess }) =>
     try {
       // 1. Upload the image to Supabase Storage
       const filePath = `${user.id}/${Date.now()}_${imageFile.name}`;
-      const { path } = await uploadFile(imageFile, 'product-images', filePath);
+      // 🎯 FIX 1: Use the correct bucket name 'goods_media'
+      const { path } = await uploadFile(imageFile, 'goods_media', filePath); 
       
-      const publicUrl = `${supabase.storage.from('product-images').getPublicUrl(path).data.publicUrl}`;
+      // 🎯 FIX 2: Use the correct bucket name 'goods_media'
+      const publicUrl = `${supabase.storage.from('goods_media').getPublicUrl(path).data.publicUrl}`;
       imageUrl = publicUrl;
       
       // 2. Insert the product data - Supabase will enforce tier limits
-      const { error } = await supabase.from('listings').insert({ // <--- CRITICAL CHANGE: Changed 'products' to 'listings'
+      const { error } = await supabase.from('listings').insert({ 
         user_id: user.id,
         category_id: CROPS_CATEGORY_ID, 
-        name, // Note: your listings table may have 'title' not 'name'. Check your DB schema.
+        name, 
         description,
         price,
         image_url: imageUrl,
