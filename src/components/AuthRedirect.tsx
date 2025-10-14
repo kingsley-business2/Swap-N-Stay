@@ -1,4 +1,4 @@
-// ========================== src/components/AuthRedirect.tsx (CLEANED AND FINAL) ==========================
+// ========================== src/components/AuthRedirect.tsx (SYNTAX FIXED) ==========================
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext'; 
@@ -42,4 +42,3 @@ const AuthRedirect: React.FC = () => {
 };
 
 export default AuthRedirect;
-
