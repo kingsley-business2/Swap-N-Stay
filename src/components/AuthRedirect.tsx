@@ -42,3 +42,4 @@ const AuthRedirect: React.FC = () => {
 };
 
 export default AuthRedirect;
+
