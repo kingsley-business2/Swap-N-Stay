@@ -1,16 +1,9 @@
-// ========================== src/api/supabase.ts (REVERTED) ==========================
+// ========================== src/api/supabase.ts (HARDCODED VERSION) ==========================
 import { createClient } from '@supabase/supabase-js';
 
-// Validate environment variables
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-// 🛑 THIS BLOCK IS RESTORED 🛑: It forces the crash when keys are missing
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error(
-    'Missing Supabase environment variables. Please check your .env file.'
-  );
-}
+// 🛑 WARNING: HARDCODED KEYS FOR SCHOOL PROJECT ONLY! 🛑
+const supabaseUrl = 'https://gtamcgrvqouallfwcmtg.supabase.co/';
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0YW1jZ3J2cW91YWxsZndjbXRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg2OTQ4MjYsImV4cCI6MjA3NDI3MDgyNn0.trNxO9UBdMJz5ONW9aSeYz16XJ61d4Emp3QuM7VyE50';
 
 // Create Supabase client with enhanced configuration
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
@@ -27,7 +20,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   }
 });
 
-// Optional: Add error logging for development
+// Optional: Add error logging for development (Keep this as is)
 if (import.meta.env.DEV) {
   supabase
     .channel('schema-changes')
