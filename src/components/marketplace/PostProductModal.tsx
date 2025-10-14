@@ -38,10 +38,10 @@ const PostProductModal: React.FC<PostProductModalProps> = ({ onPostSuccess }) =>
     try {
       // 1. Upload the image to Supabase Storage
       const filePath = `${user.id}/${Date.now()}_${imageFile.name}`;
-      // 🎯 FIX 1: Use the correct bucket name 'goods_media'
+      // 🎯 FIXED: Use the correct bucket name 'goods_media'
       const { path } = await uploadFile(imageFile, 'goods_media', filePath); 
       
-      // 🎯 FIX 2: Use the correct bucket name 'goods_media'
+      // 🎯 FIXED: Use the correct bucket name 'goods_media'
       const publicUrl = `${supabase.storage.from('goods_media').getPublicUrl(path).data.publicUrl}`;
       imageUrl = publicUrl;
       
@@ -134,3 +134,4 @@ const PostProductModal: React.FC<PostProductModalProps> = ({ onPostSuccess }) =>
 };
 
 export default PostProductModal;
+
