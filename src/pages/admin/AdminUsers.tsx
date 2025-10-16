@@ -1,33 +1,33 @@
-// ========================== src/pages/admin/AdminUsers.tsx (FINAL CORRECTION) ==========================
+// ========================== src/pages/admin/AdminUsers.tsx (FINAL VERSION) ==========================
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../api/supabase';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
-// ⭐ CRITICAL FIX: Change import from 'UserProfile' to 'Profile'
-import { Profile } from '../../types/auth'; 
+import { Profile } from '../../types/auth'; // Ensure this type is correct
 
 const AdminUsers: React.FC = () => {
-  const { isAuthChecked: authChecked, isAdmin } = useAuth(); 
-  // ⭐ FIX: Use the new Profile type
+  // Use the standard variable name `isAuthChecked` for consistency
+  const { isAuthChecked, isAdmin } = useAuth(); 
   const [users, setUsers] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingUserId, setUpdatingUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (authChecked && isAdmin) {
+    // Check both authentication status and admin status before fetching
+    if (isAuthChecked && isAdmin) {
       fetchUsers();
-    } else if (authChecked && !isAdmin) {
+    } else if (isAuthChecked && !isAdmin) {
       setLoading(false);
     }
-  }, [authChecked, isAdmin]);
+  }, [isAuthChecked, isAdmin]);
 
   const fetchUsers = async () => {
     setLoading(true);
     try {
+      // Admin query to fetch ALL user profiles
       const { data, error } = await supabase
         .from('profiles')
-        // NOTE: The SELECT query is already correct, fetching all required fields.
         .select('id, email, username, tier, created_at, name, is_admin, phone_number, date_of_birth, location')
         .order('created_at', { ascending: false });
       
@@ -36,7 +36,6 @@ const AdminUsers: React.FC = () => {
       }
       
       if (data) {
-        // ⭐ FIX: Cast to Profile[]
         setUsers(data as Profile[]);
       }
     } catch (error) {
@@ -61,7 +60,7 @@ const AdminUsers: React.FC = () => {
       }
       
       toast.success(`User tier updated to ${newTier}`);
-      fetchUsers(); // Refresh the list
+      fetchUsers(); // Refresh the list to reflect the change
     } catch (error) {
       console.error('Error updating user tier:', error);
       toast.error('Failed to update user tier');
@@ -75,8 +74,9 @@ const AdminUsers: React.FC = () => {
       case 'free':
         return 'badge badge-info';
       case 'premium':
-      case 'gold':
         return 'badge badge-success';
+      case 'gold':
+        return 'badge badge-warning';
       default:
         return 'badge badge-info';
     }
@@ -86,7 +86,7 @@ const AdminUsers: React.FC = () => {
     return tier.charAt(0).toUpperCase() + tier.slice(1);
   };
 
-  if (loading || !authChecked) { 
+  if (loading || !isAuthChecked) { 
     return (
       <div className="p-8 flex justify-center items-center min-h-64">
         <span className="loading loading-spinner loading-lg"></span>
@@ -94,6 +94,7 @@ const AdminUsers: React.FC = () => {
     );
   }
 
+  // Admin access guard
   if (!isAdmin) {
     return (
       <div className="p-8">
