@@ -1,4 +1,4 @@
-// ========================== vite.config.ts (FINAL UPDATE) ==========================
+// ========================== vite.config.ts (FINAL UPDATE with sourcemap: true) ==========================
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
@@ -41,7 +41,8 @@ export default defineConfig({
   ],
   build: {
     outDir: 'dist',
-    sourcemap: false,
+    // 💡 CRITICAL CHANGE: Set to true to enable source map generation for debugging
+    sourcemap: true, 
     minify: 'esbuild',
     rollupOptions: {
       output: {
