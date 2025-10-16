@@ -1,4 +1,4 @@
-// ========================== src/context/AuthContext.tsx (ROBUST FIX) ==========================
+// ========================== src/context/AuthContext.tsx (TEMPORARY ISOLATION) ==========================
 import { createContext, useState, useEffect, useContext, ReactNode } from 'react';
 import { supabase } from '../api/supabase';
 import { User, Profile, LoginCredentials, RegisterCredentials } from '../types/auth'; 
@@ -22,7 +22,8 @@ const initialAuthContext: AuthContextType = {
   profile: null,
   isAuthenticated: false,
   isAdmin: false,
-  isLoading: true,
+  // 💡 TEMP CHANGE: Set isLoading to false initially for test
+  isLoading: false, 
   isAuthChecked: false,
   login: () => Promise.resolve(),
   logout: () => Promise.resolve(),
@@ -38,7 +39,8 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  // 💡 TEMP CHANGE: Set isLoading to false initially for test
+  const [isLoading, setIsLoading] = useState(false); 
   const [isAuthChecked, setIsAuthChecked] = useState(false);
   
   const fetchProfile = async (userId: string): Promise<Profile | null> => {
@@ -60,63 +62,62 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return null;
   };
 
+  // 🛑 CRITICAL TEMP STEP: COMMENT OUT THE ENTIRE INITIALIZATION LOGIC
+  // This is to see if the app loads without trying to talk to Supabase
   useEffect(() => {
-    const handleSession = async (currentSession: Session | null) => {
-        setIsLoading(true);
+    // console.log("AuthContext: Initialization logic is temporarily disabled for debugging.");
+    // const handleSession = async (currentSession: Session | null) => {
+    //     setIsLoading(true);
         
-        try {
-            if (currentSession?.user) {
-                const userProfile = await fetchProfile(currentSession.user.id);
+    //     try {
+    //         if (currentSession?.user) {
+    //             const userProfile = await fetchProfile(currentSession.user.id);
                 
-                const fullUser: User = { 
-                    id: currentSession.user.id, 
-                    email: currentSession.user.email || '', 
-                    profile: userProfile 
-                };
+    //             const fullUser: User = { 
+    //                 id: currentSession.user.id, 
+    //                 email: currentSession.user.email || '', 
+    //                 profile: userProfile 
+    //             };
 
-                setUser(fullUser);
-                setProfile(userProfile);
+    //             setUser(fullUser);
+    //             setProfile(userProfile);
                 
-            } else {
-                setUser(null);
-                setProfile(null);
-            }
-        } catch (error) {
-            // CRITICAL: Catch network or unhandled Supabase errors
-            console.error("CRITICAL AUTH FETCH ERROR:", error);
-            // On failure, clear user state and allow app to render as unauthenticated
-            setUser(null); 
-            setProfile(null);
-        } finally {
-            // ALWAYS clear loading state and mark check as complete
-            setIsLoading(false);
-            setIsAuthChecked(true);
-        }
-    };
+    //         } else {
+    //             setUser(null);
+    //             setProfile(null);
+    //         }
+    //     } catch (error) {
+    //         console.error("CRITICAL AUTH FETCH ERROR:", error);
+    //         setUser(null); 
+    //         setProfile(null);
+    //     } finally {
+    //         setIsLoading(false);
+    //         setIsAuthChecked(true);
+    //     }
+    // };
 
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-        (event, currentSession) => {
-            if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
-                handleSession(currentSession);
-            }
-        }
-    );
+    // const { data: authListener } = supabase.auth.onAuthStateChange(
+    //     (event, currentSession) => {
+    //         if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+    //             handleSession(currentSession);
+    //         }
+    //     }
+    // );
 
-    // Initial session fetch with added error handling
-    supabase.auth.getSession()
-        .then(({ data: { session: initialSession } }) => {
-            if (!isAuthChecked) {
-                handleSession(initialSession);
-            }
-        })
-        .catch(error => {
-            console.error("Initial session fetch failed:", error);
-            handleSession(null); // Treat as signed out on failure
-        });
+    // supabase.auth.getSession()
+    //     .then(({ data: { session: initialSession } }) => {
+    //         if (!isAuthChecked) {
+    //             handleSession(initialSession);
+    //         }
+    //     })
+    //     .catch(error => {
+    //         console.error("Initial session fetch failed:", error);
+    //         handleSession(null); 
+    //     });
 
-    return () => {
-      authListener.subscription.unsubscribe();
-    };
+    // return () => {
+    //   authListener.subscription.unsubscribe();
+    // };
   }, []);
 
   const login = async (credentials: LoginCredentials) => {
@@ -125,7 +126,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setIsLoading(false);
     if (error) throw error;
   };
+// ... (rest of the functions remain the same: logout, register, value)
 
+// ... rest of the code is unchanged ...
   const logout = async () => {
     setIsLoading(true);
     const { error } = await supabase.auth.signOut();
@@ -171,6 +174,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     logout,
     register,
   };
+
+  // NOTE: Remove the conditional loading return here if you have one, 
+  // or ensure `isLoading` is always false in this temporary state.
+  // Assuming no conditional return for now.
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
