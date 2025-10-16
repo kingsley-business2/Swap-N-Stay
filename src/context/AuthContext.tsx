@@ -1,4 +1,4 @@
-// ========================== src/context/AuthContext.tsx (TEMPORARY ISOLATION) ==========================
+// ========================== src/context/AuthContext.tsx (FINAL RE-ENABLED VERSION) ==========================
 import { createContext, useState, useEffect, useContext, ReactNode } from 'react';
 import { supabase } from '../api/supabase';
 import { User, Profile, LoginCredentials, RegisterCredentials } from '../types/auth'; 
@@ -22,8 +22,7 @@ const initialAuthContext: AuthContextType = {
   profile: null,
   isAuthenticated: false,
   isAdmin: false,
-  // 💡 TEMP CHANGE: Set isLoading to false initially for test
-  isLoading: false, 
+  isLoading: true, // Revert to true while checking session
   isAuthChecked: false,
   login: () => Promise.resolve(),
   logout: () => Promise.resolve(),
@@ -39,12 +38,10 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
-  // 💡 TEMP CHANGE: Set isLoading to false initially for test
-  const [isLoading, setIsLoading] = useState(false); 
+  const [isLoading, setIsLoading] = useState(true); // Revert to true
   const [isAuthChecked, setIsAuthChecked] = useState(false);
   
   const fetchProfile = async (userId: string): Promise<Profile | null> => {
-    // Note: error code PGRST116 is 'No rows returned', which is handled as success (null profile)
     const { data: profileData, error } = await supabase
       .from('profiles')
       .select('id, name, tier, is_admin, username') 
@@ -62,63 +59,61 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return null;
   };
 
-  // 🛑 CRITICAL TEMP STEP: COMMENT OUT THE ENTIRE INITIALIZATION LOGIC
-  // This is to see if the app loads without trying to talk to Supabase
+  // 💡 LOGIC RE-ENABLED: This is the robust session checking logic
   useEffect(() => {
-    // console.log("AuthContext: Initialization logic is temporarily disabled for debugging.");
-    // const handleSession = async (currentSession: Session | null) => {
-    //     setIsLoading(true);
+    const handleSession = async (currentSession: Session | null) => {
+        setIsLoading(true);
         
-    //     try {
-    //         if (currentSession?.user) {
-    //             const userProfile = await fetchProfile(currentSession.user.id);
+        try {
+            if (currentSession?.user) {
+                const userProfile = await fetchProfile(currentSession.user.id);
                 
-    //             const fullUser: User = { 
-    //                 id: currentSession.user.id, 
-    //                 email: currentSession.user.email || '', 
-    //                 profile: userProfile 
-    //             };
+                const fullUser: User = { 
+                    id: currentSession.user.id, 
+                    email: currentSession.user.email || '', 
+                    profile: userProfile 
+                };
 
-    //             setUser(fullUser);
-    //             setProfile(userProfile);
+                setUser(fullUser);
+                setProfile(userProfile);
                 
-    //         } else {
-    //             setUser(null);
-    //             setProfile(null);
-    //         }
-    //     } catch (error) {
-    //         console.error("CRITICAL AUTH FETCH ERROR:", error);
-    //         setUser(null); 
-    //         setProfile(null);
-    //     } finally {
-    //         setIsLoading(false);
-    //         setIsAuthChecked(true);
-    //     }
-    // };
+            } else {
+                setUser(null);
+                setProfile(null);
+            }
+        } catch (error) {
+            console.error("CRITICAL AUTH FETCH ERROR:", error);
+            setUser(null); 
+            setProfile(null);
+        } finally {
+            setIsLoading(false);
+            setIsAuthChecked(true);
+        }
+    };
 
-    // const { data: authListener } = supabase.auth.onAuthStateChange(
-    //     (event, currentSession) => {
-    //         if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
-    //             handleSession(currentSession);
-    //         }
-    //     }
-    // );
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+        (event, currentSession) => {
+            if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+                handleSession(currentSession);
+            }
+        }
+    );
 
-    // supabase.auth.getSession()
-    //     .then(({ data: { session: initialSession } }) => {
-    //         if (!isAuthChecked) {
-    //             handleSession(initialSession);
-    //         }
-    //     })
-    //     .catch(error => {
-    //         console.error("Initial session fetch failed:", error);
-    //         handleSession(null); 
-    //     });
+    supabase.auth.getSession()
+        .then(({ data: { session: initialSession } }) => {
+            if (!isAuthChecked) {
+                handleSession(initialSession);
+            }
+        })
+        .catch(error => {
+            console.error("Initial session fetch failed:", error);
+            handleSession(null); 
+        });
 
-    // return () => {
-    //   authListener.subscription.unsubscribe();
-    // };
-  }, []);
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, []); // Dependency array remains empty
 
   const login = async (credentials: LoginCredentials) => {
     setIsLoading(true);
@@ -126,9 +121,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setIsLoading(false);
     if (error) throw error;
   };
-// ... (rest of the functions remain the same: logout, register, value)
 
-// ... rest of the code is unchanged ...
   const logout = async () => {
     setIsLoading(true);
     const { error } = await supabase.auth.signOut();
@@ -150,7 +143,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
 
     if (data.user) {
-        // Must insert the profile immediately after signup
         await supabase.from('profiles').insert({ 
             id: data.user.id, 
             name: credentials.name || null, 
@@ -175,10 +167,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     register,
   };
 
-  // NOTE: Remove the conditional loading return here if you have one, 
-  // or ensure `isLoading` is always false in this temporary state.
-  // Assuming no conditional return for now.
-
+  // 💡 Optional: Add a loading screen here if you want to prevent UI flicker
+  if (isLoading && !isAuthChecked) {
+    return <div className="min-h-screen flex items-center justify-center">Loading authentication...</div>;
+  }
+  
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
