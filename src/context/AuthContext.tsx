@@ -1,12 +1,23 @@
-// ========================== src/context/AuthContext.tsx (FINAL CLEANED) ==========================
+// ========================== src/context/AuthContext.tsx (FINAL FIX FOR TS2339) ==========================
 import { createContext, useState, useEffect, useContext, ReactNode } from 'react';
 import { supabase } from '../api/supabase';
 import { User, Profile, LoginCredentials, RegisterCredentials } from '../types/auth'; 
-import { Session } from '@supabase/supabase-js'; // TS6133 fixed by usage in handleSession
+import { Session } from '@supabase/supabase-js';
 
 // Define AuthContextType relying on imported User/Profile
 interface AuthContextType {
-// ... (omitted for brevity)
+  // 🎯 CRITICAL FIX: These missing properties caused the TS2339 errors across all components.
+  user: User | null;
+  profile: Profile | null;
+  isAuthenticated: boolean;
+  isAdmin: boolean;
+  isLoading: boolean;
+  isAuthChecked: boolean;
+
+  // These methods were also previously flagged in the logs
+  login: (credentials: LoginCredentials) => Promise<void>;
+  logout: () => Promise<void>;
+  register: (credentials: RegisterCredentials) => Promise<void>;
 }
 
 const initialAuthContext: AuthContextType = {
@@ -28,12 +39,12 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null); // TS6133 fixed by usage in handleSession
-  const [profile, setProfile] = useState<Profile | null>(null); // TS6133 fixed by usage in handleSession
+  const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true); 
-  const [isAuthChecked, setIsAuthChecked] = useState(false); // TS6133 fixed by usage in handleSession
+  const [isAuthChecked, setIsAuthChecked] = useState(false);
   
-  const fetchProfile = async (userId: string): Promise<Profile | null> => { // TS6133 fixed by usage in handleSession
+  const fetchProfile = async (userId: string): Promise<Profile | null> => {
     const { data: profileData, error } = await supabase
       .from('profiles')
       .select('id, name, tier, is_admin, username') 
@@ -51,7 +62,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return null;
   };
 
-  // 💡 All usage is restored here, fixing all TS6133 errors for this file
   useEffect(() => {
     const handleSession = async (currentSession: Session | null) => {
         setIsLoading(true);
@@ -105,14 +115,61 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return () => {
       authListener.subscription.unsubscribe();
     };
-  }, []);
+  }, []); 
 
-  const login = async (credentials: LoginCredentials) => { /* ... */ };
-  const logout = async () => { /* ... */ };
-  const register = async (credentials: RegisterCredentials) => { /* ... */ };
+  const login = async (credentials: LoginCredentials) => {
+    setIsLoading(true);
+    const { error } = await supabase.auth.signInWithPassword(credentials);
+    setIsLoading(false);
+    if (error) throw error;
+  };
 
-  const value: AuthContextType = { /* ... */ };
+  const logout = async () => {
+    setIsLoading(true);
+    const { error } = await supabase.auth.signOut();
+    setIsLoading(false);
+    if (error) console.error("Supabase logout error:", error);
+  };
 
+  const register = async (credentials: RegisterCredentials) => {
+    setIsLoading(true);
+    
+    const { data, error } = await supabase.auth.signUp({
+      email: credentials.email,
+      password: credentials.password,
+    });
+    
+    if (error) {
+      setIsLoading(false);
+      throw error;
+    }
+
+    if (data.user) {
+        await supabase.from('profiles').insert({ 
+            id: data.user.id, 
+            name: credentials.name || null, 
+            tier: 'free',
+            is_admin: false,
+            username: null, 
+        });
+    }
+    
+    setIsLoading(false);
+  };
+
+  const value: AuthContextType = {
+    user,
+    profile,
+    isAuthenticated: !!user,
+    isAdmin: profile?.is_admin ?? false,
+    isLoading,
+    isAuthChecked,
+    login,
+    logout,
+    register,
+  };
+  
+  // Optional: Add a loading screen here if you want to prevent UI flicker
   if (isLoading && !isAuthChecked) {
     return <div className="min-h-screen flex items-center justify-center">Loading authentication...</div>;
   }
