@@ -1,11 +1,12 @@
-// ========================== src/pages/Dashboard.tsx (FINAL CORRECTION) ==========================
+// ========================== src/pages/Dashboard.tsx (FINAL FUNCTIONAL VERSION) ==========================
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
-// ⭐ CRITICAL FIX: Change import from 'UserProfile' to 'Profile'
-import { Profile } from '../types/auth'; 
+import { Profile } from '../types/auth'; // Importing Profile for clarity, though optional
 
 const Dashboard: React.FC = () => {
+  // Destructure `profile` directly from context.
+  // The redundant `userProfile` variable has been removed.
   const { user, profile, isAuthChecked, isLoading } = useAuth();
   const [activeTab, setActiveTab] = useState<'profile' | 'listings'>('profile');
 
@@ -27,9 +28,6 @@ const Dashboard: React.FC = () => {
     );
   }
   
-  // ⭐ FIX: Use the new Profile type
-  const userProfile: Profile | null = profile;
-
   const getTierBadgeClass = (tier: string) => {
     switch (tier) {
       case 'free':
@@ -54,24 +52,28 @@ const Dashboard: React.FC = () => {
         </div>
         <div>
           <p className="font-semibold">Username:</p>
-          <p className="text-gray-600">{userProfile?.username || userProfile?.name || 'N/A'}</p> 
+          {/* Using `profile` directly */}
+          <p className="text-gray-600">{profile?.username || profile?.name || 'N/A'}</p> 
         </div>
         <div>
           <p className="font-semibold">Account Tier:</p>
-          <span className={getTierBadgeClass(userProfile?.tier || 'free')}>
-            {userProfile?.tier.toUpperCase() || 'FREE'}
+          {/* Using `profile` directly */}
+          <span className={getTierBadgeClass(profile?.tier || 'free')}>
+            {profile?.tier.toUpperCase() || 'FREE'}
           </span>
         </div>
         <div>
           <p className="font-semibold">Administrator Status:</p>
-          <span className={`badge ${userProfile?.is_admin ? 'badge-error' : 'badge-ghost'}`}>
-            {userProfile?.is_admin ? 'ADMIN' : 'User'}
+          {/* Using `profile` directly */}
+          <span className={`badge ${profile?.is_admin ? 'badge-error' : 'badge-ghost'}`}>
+            {profile?.is_admin ? 'ADMIN' : 'User'}
           </span>
         </div>
       </div>
 
       <div className="mt-6 flex gap-4">
-        {userProfile?.tier !== 'gold' && (
+        {/* Using `profile` directly */}
+        {profile?.tier !== 'gold' && (
           <Link to="/upgrade" className="btn btn-primary">
             Upgrade Tier
           </Link>
@@ -87,7 +89,8 @@ const Dashboard: React.FC = () => {
     <div className="p-6 bg-base-100 rounded-box shadow-lg">
       <h3 className="text-xl font-bold mb-4">My Listings</h3>
       <div className="alert alert-info">
-        <span>You have no active listings yet.</span>
+        {/* This should ideally link to the MyListings page you created */}
+        <span>View your active listings by clicking the "My Listings" menu item.</span>
       </div>
       <Link to="/post" className="btn btn-secondary mt-4">
         Post a New Listing
@@ -97,7 +100,8 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="p-8 max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold mb-6">Welcome back, {userProfile?.name || 'User'}!</h1>
+      {/* Using `profile` directly */}
+      <h1 className="text-3xl font-bold mb-6">Welcome back, {profile?.name || 'User'}!</h1>
 
       <div className="tabs">
         <a 
