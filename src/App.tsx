@@ -1,15 +1,31 @@
-// ========================== src/App.tsx (TEMPORARY CRASH DIAGNOSTIC) ==========================
+// ========================== src/App.tsx (FINAL CIRCULAR DEPENDENCY FIX) ==========================
 import React, { useEffect } from 'react';
 import { 
-  BrowserRouter as Router, 
+  // 🛑 REMOVE BrowserRouter as Router if you use it in main.tsx (which you do)
   Routes, 
   Route, 
   useNavigate 
 } from 'react-router-dom';
-import { useAuth } from './context/AuthContext'; // Keep this import
-import { supabase } from './api/supabase'; // Keep this import
+import { Toaster } from 'react-hot-toast';
+import { useAuth } from './context/AuthContext'; // 🛑 REMOVED AuthProvider import
+import { supabase } from './api/supabase';
 
-// 🛑 REMOVE ALL OTHER IMPORTS (Components and Pages) for this test
+// Components
+import Header from './components/Header';
+import Footer from './components/Footer'; 
+import PrivateRoute from './components/routing/PrivateRoute';
+import AuthRedirect from './components/AuthRedirect';
+
+// Pages
+import Marketplace from './pages/Marketplace';
+import MyListings from './pages/MyListings'; 
+import Dashboard from './pages/Dashboard';
+import AdminDashboard from './pages/AdminDashboard';
+import Login from './pages/Login'; 
+import Signup from './pages/Signup';
+import Profile from './pages/Profile'; 
+import SetupProfile from './pages/SetupProfile'; 
+import ErrorPage from './pages/ErrorPage'; 
 
 // --------------------------------------------------------------------------------
 
@@ -19,15 +35,12 @@ const AuthCallbackRoute: React.FC = () => {
   useAuth(); 
 
   useEffect(() => {
-    // Listen for auth events (e.g., email confirmation redirect)
     const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
         if (session && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
-            // Redirect to the root, where AuthRedirect component takes over
             navigate('/', { replace: true });
         }
     });
 
-    // Clean up the listener
     return () => {
         authListener.subscription.unsubscribe();
     };
@@ -44,23 +57,43 @@ const AuthCallbackRoute: React.FC = () => {
 
 // --------------------------------------------------------------------------------
 
-const AppContent: React.FC = () => {
-  // 🛑 TEMPORARILY REPLACE ALL ROUTER/UI LOGIC WITH STATIC TEXT
+// AppContent is now the main component, renamed App as per standard practice
+const App: React.FC = () => {
   return (
-    <div style={{ padding: '50px', fontSize: '24px', textAlign: 'center', backgroundColor: '#e0f7fa', minHeight: '100vh' }}>
-      <h1>APP TEST SUCCESSFUL</h1>
-      <p>If you see this, the crash was definitely inside the original AppContent component (Header, Footer, or Routes).</p>
+    <div className="flex flex-col min-h-screen">
+      <Header />
+      <main className="flex-grow">
+        <Routes>
+          {/* Landing Page Route - Handles all login/auth redirection */}
+          <Route path="/" element={<AuthRedirect />} /> 
+          
+          {/* Auth Pages */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/auth/callback" element={<AuthCallbackRoute />} /> 
+          
+          {/* Core App Routes */}
+          <Route path="/marketplace" element={<Marketplace />} />
+          
+          {/* Protected Routes (Requires Auth) */}
+          <Route element={<PrivateRoute />}>
+            <Route path="/setup-profile" element={<SetupProfile />} /> 
+            
+            <Route path="/dashboard" element={<Dashboard />} /> 
+            <Route path="/my-listings" element={<MyListings />} /> 
+            <Route path="/profile" element={<Profile />} /> 
+
+            <Route path="/admin" element={<AdminDashboard />} /> 
+          </Route>
+
+          {/* Catch-all 404 Route */}
+          <Route path="*" element={<ErrorPage />} />
+        </Routes>
+      </main>
+      <Footer />
+      <Toaster />
     </div>
   );
 };
-
-const App: React.FC = () => (
-  // 🛑 Router and AuthProvider are the only wrapper components left
-  <Router>
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
-  </Router>
-);
 
 export default App;
