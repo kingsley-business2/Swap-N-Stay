@@ -1,13 +1,13 @@
-// ========================== src/App.tsx (FINAL CIRCULAR DEPENDENCY FIX) ==========================
+// ========================== src/App.tsx (FINAL CLEANED) ==========================
 import React, { useEffect } from 'react';
 import { 
-  // 🛑 REMOVE BrowserRouter as Router if you use it in main.tsx (which you do)
+  // 💡 Routes and Route are now USED, fixing TS6133
   Routes, 
   Route, 
   useNavigate 
 } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import { useAuth } from './context/AuthContext'; // 🛑 REMOVED AuthProvider import
+import { useAuth } from './context/AuthContext'; // 🛑 AuthProvider import removed
 import { supabase } from './api/supabase';
 
 // Components
@@ -29,7 +29,7 @@ import ErrorPage from './pages/ErrorPage';
 
 // --------------------------------------------------------------------------------
 
-// Component that handles redirection after the Supabase auth flow
+// 💡 AuthCallbackRoute is now USED, fixing TS6133
 const AuthCallbackRoute: React.FC = () => {
   const navigate = useNavigate();
   useAuth(); 
@@ -57,25 +57,21 @@ const AuthCallbackRoute: React.FC = () => {
 
 // --------------------------------------------------------------------------------
 
-// AppContent is now the main component, renamed App as per standard practice
+// 💡 This is the AppContent (renamed App)
 const App: React.FC = () => {
   return (
     <div className="flex flex-col min-h-screen">
-      <Header />
+      <Header /> {/* USED */}
       <main className="flex-grow">
-        <Routes>
-          {/* Landing Page Route - Handles all login/auth redirection */}
+        <Routes> {/* USED */}
           <Route path="/" element={<AuthRedirect />} /> 
           
-          {/* Auth Pages */}
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/auth/callback" element={<AuthCallbackRoute />} /> 
           
-          {/* Core App Routes */}
           <Route path="/marketplace" element={<Marketplace />} />
           
-          {/* Protected Routes (Requires Auth) */}
           <Route element={<PrivateRoute />}>
             <Route path="/setup-profile" element={<SetupProfile />} /> 
             
@@ -86,11 +82,10 @@ const App: React.FC = () => {
             <Route path="/admin" element={<AdminDashboard />} /> 
           </Route>
 
-          {/* Catch-all 404 Route */}
           <Route path="*" element={<ErrorPage />} />
         </Routes>
       </main>
-      <Footer />
+      <Footer /> {/* USED */}
       <Toaster />
     </div>
   );
