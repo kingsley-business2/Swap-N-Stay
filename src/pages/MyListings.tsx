@@ -1,14 +1,16 @@
-// ========================== src/pages/MyListings.tsx (NEW FILE) ==========================
+// ========================== src/pages/MyListings.tsx (FINAL FIX: Edit Navigation) ==========================
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../api/supabase';
-import { Listing } from '../types/custom'; // Ensure this type is correct
+import { Listing } from '../types/custom'; 
 import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom'; // 💡 IMPORTED for navigation
 
 const MyListings: React.FC = () => {
     const { user, isAuthenticated } = useAuth();
     const [listings, setListings] = useState<Listing[]>([]);
     const [loading, setLoading] = useState(true);
+    const navigate = useNavigate(); // 💡 HOOK INITIALIZED
 
     useEffect(() => {
         if (isAuthenticated && user?.id) {
@@ -22,11 +24,11 @@ const MyListings: React.FC = () => {
     const fetchMyListings = async (userId: string) => {
         setLoading(true);
         try {
-            // ⭐ CRITICAL FIX: Filtering the listings by the current user_id
+            // CRITICAL FIX: Filtering the listings by the current user_id
             const { data, error } = await supabase
                 .from('listings')
                 .select('*')
-                .eq('user_id', userId) // <-- THE ESSENTIAL FILTER
+                .eq('user_id', userId) 
                 .order('created_at', { ascending: false });
 
             if (error) {
@@ -42,6 +44,12 @@ const MyListings: React.FC = () => {
         }
     };
 
+    // 💡 NEW HANDLER for Edit
+    const handleEdit = (listingId: string) => {
+        // Navigate to the edit page. You must have this route defined in App.tsx
+        navigate(`/edit-listing/${listingId}`); 
+    };
+
     const handleDelete = async (listingId: string) => {
         if (!window.confirm('Are you sure you want to delete this listing?')) return;
         
@@ -53,7 +61,7 @@ const MyListings: React.FC = () => {
                 .from('listings')
                 .delete()
                 .eq('id', listingId)
-                .eq('user_id', user!.id); // Security check: ensure only the owner can delete
+                .eq('user_id', user!.id); // Security check
 
             if (error) throw error;
 
@@ -106,7 +114,12 @@ const MyListings: React.FC = () => {
                                     <p className="font-semibold mt-1">GHS {listing.price.toFixed(2)}</p>
                                 </div>
                                 <div className="card-actions justify-end">
-                                    <button className="btn btn-sm btn-outline btn-info">Edit</button>
+                                    <button 
+                                        className="btn btn-sm btn-outline btn-info"
+                                        onClick={() => handleEdit(listing.id)} // 💡 EDIT HANDLER USED
+                                    >
+                                        Edit
+                                    </button>
                                     <button 
                                         className="btn btn-sm btn-outline btn-error"
                                         onClick={() => handleDelete(listing.id)}
