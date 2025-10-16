@@ -1,4 +1,4 @@
-// ========================== src/components/AuthRedirect.tsx (SYNTAX FIXED) ==========================
+// ========================== src/components/AuthRedirect.tsx (FINAL VERSION) ==========================
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext'; 
@@ -15,7 +15,6 @@ const AuthRedirect: React.FC = () => {
     }
 
     if (isAuthenticated) {
-      // Use the corrected Profile type
       const userProfile = profile as Profile | null | undefined;
       
       // 2. CHECK: If authenticated but profile (specifically 'username') is null, redirect to setup
@@ -42,4 +41,3 @@ const AuthRedirect: React.FC = () => {
 };
 
 export default AuthRedirect;
-
