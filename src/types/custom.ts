@@ -1,17 +1,20 @@
-// ========================== src/types/custom.ts (CONSOLIDATED & CORRECTED) ==========================
-
 // Define the Tier union type - CENTRAL SOURCE OF TRUTH
 export type Tier = 'free' | 'premium' | 'gold';
 
-// Define the User Profile interface - RENAMED from UserProfile to Profile
+/**
+ * Defines the structure of the user profile stored in Supabase.
+ * This structure is used across the application (e.g., AuthContext, Settings.tsx).
+ */
 export interface Profile {
   id: string; // uuid from auth.users
   email?: string; 
   username: string | null; 
   name: string | null; 
+  // --- ADDED MISSING PROFILE PROPERTIES (Fix for Settings.tsx errors) ---
   phone_number: string | null; 
   date_of_birth: string | null; 
   location: string | null; 
+  // ---------------------------------------------------------------------
   tier: Tier; 
   is_admin: boolean; 
   monthly_post_value?: number; 
@@ -61,3 +64,4 @@ export interface AdCampaignClient {
     target_url: string;
     is_active: boolean;
 }
+
