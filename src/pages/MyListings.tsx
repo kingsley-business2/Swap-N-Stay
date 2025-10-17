@@ -1,16 +1,33 @@
-// ========================== src/pages/MyListings.tsx (FINAL FIX: Edit Navigation) ==========================
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../api/supabase';
 import { Listing } from '../types/custom'; 
 import toast from 'react-hot-toast';
-import { useNavigate } from 'react-router-dom'; // 💡 IMPORTED for navigation
+import { useNavigate } from 'react-router-dom';
+
+// --- NEW TIER LIMITS DEFINITION ---
+const POST_LIMITS: { [key: string]: number } = {
+    free: 5,
+    premium: 20,
+    gold: 100, // High limit to simulate 'unlimited' for gold tier
+};
+// -----------------------------------
 
 const MyListings: React.FC = () => {
-    const { user, isAuthenticated } = useAuth();
+    // 💡 Fetching profile is CRITICAL for tier check
+    const { user, isAuthenticated, profile } = useAuth(); 
     const [listings, setListings] = useState<Listing[]>([]);
     const [loading, setLoading] = useState(true);
-    const navigate = useNavigate(); // 💡 HOOK INITIALIZED
+    const navigate = useNavigate();
+
+    // --- Post Limit Calculations ---
+    const currentListingCount = listings.length;
+    // Fallback to 'free' if profile is not loaded, though it shouldn't happen when authenticated
+    const userTier = profile?.tier || 'free'; 
+    const maxPosts = POST_LIMITS[userTier] || POST_LIMITS['free'];
+    const hasReachedLimit = currentListingCount >= maxPosts;
+    const postsRemaining = maxPosts - currentListingCount;
+    // -------------------------------
 
     useEffect(() => {
         if (isAuthenticated && user?.id) {
@@ -24,7 +41,6 @@ const MyListings: React.FC = () => {
     const fetchMyListings = async (userId: string) => {
         setLoading(true);
         try {
-            // CRITICAL FIX: Filtering the listings by the current user_id
             const { data, error } = await supabase
                 .from('listings')
                 .select('*')
@@ -44,11 +60,22 @@ const MyListings: React.FC = () => {
         }
     };
 
-    // 💡 NEW HANDLER for Edit
     const handleEdit = (listingId: string) => {
-        // Navigate to the edit page. You must have this route defined in App.tsx
+        // Navigate to the edit page. (Route must be defined in App.tsx)
         navigate(`/edit-listing/${listingId}`); 
     };
+    
+    // 💡 NEW HANDLER for Create
+    const handleCreate = () => {
+        if (hasReachedLimit) {
+            toast.error(`You have reached your ${userTier.toUpperCase()} tier limit of ${maxPosts} listings.`);
+            // Prompt user to go to upgrade page
+            navigate('/upgrade');
+        } else {
+            // Navigate to the creation page. (Route must be defined in App.tsx)
+            navigate('/create-listing');
+        }
+    }
 
     const handleDelete = async (listingId: string) => {
         if (!window.confirm('Are you sure you want to delete this listing?')) return;
@@ -86,13 +113,49 @@ const MyListings: React.FC = () => {
         return <div className="p-8 alert alert-warning">Please sign in to view your listings.</div>;
     }
 
+    // --- New component for showing limits/create button ---
+    const CreateListingHeader = () => (
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 p-4 bg-base-100 rounded-lg shadow-inner border border-gray-200">
+            <div className="mb-3 sm:mb-0">
+                <p className="text-lg font-semibold text-gray-700">
+                    Listing Limit ({userTier.toUpperCase()} Tier): 
+                    <span className="ml-2 font-bold text-primary">{currentListingCount} / {maxPosts}</span>
+                </p>
+                {hasReachedLimit ? (
+                    <p className="text-sm text-red-600 mt-1 font-medium">
+                        Limit reached! Delete a listing or <a href="/upgrade" className="link link-error font-bold">upgrade your tier</a>.
+                    </p>
+                ) : (
+                    <p className="text-sm text-success mt-1">
+                        You can create **{postsRemaining}** more listing{postsRemaining !== 1 ? 's' : ''}.
+                    </p>
+                )}
+            </div>
+            
+            <button 
+                className="btn btn-primary btn-md text-white shadow-lg w-full sm:w-auto"
+                onClick={handleCreate}
+                disabled={hasReachedLimit} // Disable if limit is reached
+            >
+                {hasReachedLimit ? 'Upgrade to Post More' : 'Create New Listing'}
+            </button>
+        </div>
+    );
+    // ----------------------------------------------------
+
     return (
         <div className="container mx-auto p-4">
-            <h1 className="text-3xl font-bold mb-6">My Listings</h1>
+            <h1 className="text-3xl font-bold mb-4">My Listings</h1>
             
-            {listings.length === 0 ? (
+            <CreateListingHeader /> {/* Display the new header/button */}
+            
+            {listings.length === 0 && !hasReachedLimit ? (
                 <div className="alert alert-info shadow-lg">
-                    <span>You haven't posted any listings yet.</span>
+                    <span>You haven't posted any listings yet. Click "Create New Listing" to get started!</span>
+                </div>
+            ) : listings.length === 0 && hasReachedLimit ? (
+                 <div className="alert alert-warning shadow-lg">
+                    <span>Your listing limit is 0. Please upgrade your tier.</span>
                 </div>
             ) : (
                 <div className="space-y-4">
@@ -102,7 +165,7 @@ const MyListings: React.FC = () => {
                                 {listing.media_url ? (
                                     <img src={listing.media_url} alt={listing.title} className="w-full h-full object-cover"/>
                                 ) : (
-                                    <div className="w-full h-full bg-gray-400 flex items-center justify-center">
+                                    <div className="w-full h-full bg-gray-400 flex items-center justify-center text-xs text-white font-bold">
                                         No Media
                                     </div>
                                 )}
@@ -116,7 +179,7 @@ const MyListings: React.FC = () => {
                                 <div className="card-actions justify-end">
                                     <button 
                                         className="btn btn-sm btn-outline btn-info"
-                                        onClick={() => handleEdit(listing.id)} // 💡 EDIT HANDLER USED
+                                        onClick={() => handleEdit(listing.id)} 
                                     >
                                         Edit
                                     </button>
@@ -137,3 +200,4 @@ const MyListings: React.FC = () => {
 };
 
 export default MyListings;
+
