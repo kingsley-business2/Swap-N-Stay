@@ -1,4 +1,3 @@
-// ========================== src/api/supabase.ts (FINAL CLEANED VERSION) ==========================
 import { createClient } from '@supabase/supabase-js';
 
 // 🛑 WARNING: HARDCODED KEYS FOR SCHOOL PROJECT ONLY! 🛑
@@ -31,3 +30,4 @@ if (import.meta.env.DEV) {
     )
     .subscribe();
 }
+
