@@ -1,13 +1,10 @@
-// ========================== src/App.tsx (FINAL CLEANED) ==========================
 import React, { useEffect } from 'react';
 import { 
-  // 💡 Routes and Route are now USED, fixing TS6133
   Routes, 
   Route, 
   useNavigate 
 } from 'react-router-dom';
-import { Toaster } from 'react-hot-toast';
-import { useAuth } from './context/AuthContext'; // 🛑 AuthProvider import removed
+import { useAuth } from './context/AuthContext';
 import { supabase } from './api/supabase';
 
 // Components
@@ -15,6 +12,7 @@ import Header from './components/Header';
 import Footer from './components/Footer'; 
 import PrivateRoute from './components/routing/PrivateRoute';
 import AuthRedirect from './components/AuthRedirect';
+import PaywallGate from './components/PaywallGate'; // Paywall Gate Component Import
 
 // Pages
 import Marketplace from './pages/Marketplace';
@@ -26,10 +24,11 @@ import Signup from './pages/Signup';
 import Profile from './pages/Profile'; 
 import SetupProfile from './pages/SetupProfile'; 
 import ErrorPage from './pages/ErrorPage'; 
+import UpgradePage from './pages/Upgrade'; 
+import { Toaster } from 'react-hot-toast'; // Toaster is moved back to main.tsx but keeping import here just in case
 
 // --------------------------------------------------------------------------------
 
-// 💡 AuthCallbackRoute is now USED, fixing TS6133
 const AuthCallbackRoute: React.FC = () => {
   const navigate = useNavigate();
   useAuth(); 
@@ -42,7 +41,9 @@ const AuthCallbackRoute: React.FC = () => {
     });
 
     return () => {
-        authListener.subscription.unsubscribe();
+        if (authListener?.subscription) {
+            authListener.subscription.unsubscribe();
+        }
     };
   }, [navigate]);
 
@@ -57,13 +58,13 @@ const AuthCallbackRoute: React.FC = () => {
 
 // --------------------------------------------------------------------------------
 
-// 💡 This is the AppContent (renamed App)
 const App: React.FC = () => {
   return (
     <div className="flex flex-col min-h-screen">
-      <Header /> {/* USED */}
+      {/* Assuming Header and Footer components exist elsewhere and are styled with Tailwind */}
+      <Header /> 
       <main className="flex-grow">
-        <Routes> {/* USED */}
+        <Routes> 
           <Route path="/" element={<AuthRedirect />} /> 
           
           <Route path="/login" element={<Login />} />
@@ -71,11 +72,14 @@ const App: React.FC = () => {
           <Route path="/auth/callback" element={<AuthCallbackRoute />} /> 
           
           <Route path="/marketplace" element={<Marketplace />} />
+          <Route path="/upgrade" element={<UpgradePage />} /> {/* Upgrade Page Route */}
           
           <Route element={<PrivateRoute />}>
             <Route path="/setup-profile" element={<SetupProfile />} /> 
             
-            <Route path="/dashboard" element={<Dashboard />} /> 
+            {/* Dashboard is now PROTECTED by the PaywallGate component */}
+            <Route path="/dashboard" element={<PaywallGate><Dashboard /></PaywallGate>} /> 
+            
             <Route path="/my-listings" element={<MyListings />} /> 
             <Route path="/profile" element={<Profile />} /> 
 
@@ -85,10 +89,10 @@ const App: React.FC = () => {
           <Route path="*" element={<ErrorPage />} />
         </Routes>
       </main>
-      <Footer /> {/* USED */}
-      <Toaster />
+      <Footer /> 
     </div>
   );
 };
 
 export default App;
+
