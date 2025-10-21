@@ -20,7 +20,7 @@ export interface Profile {
   created_at: string; 
 }
 
-// **NEW TYPE EXPORTED TO BE USED BY CONTEXTS AND STATE THAT CAN BE NULL**
+// **CRITICAL FIX: Explicitly export NullableProfile to resolve TS2305**
 export type NullableProfile = Profile | null;
 
 // Define the base Listing interface (matches the 'listings' table structure)
@@ -79,3 +79,12 @@ export interface AdCampaignClient {
 
 
 
+
+
+
+
+
+
+
+
+ 
