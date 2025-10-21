@@ -1,5 +1,3 @@
-// src/pages/Settings.tsx
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../api/supabase';
 import { useAuth } from '../context/AuthContext'; 
@@ -8,10 +6,9 @@ import toast from 'react-hot-toast';
 const Settings: React.FC = () => {
   const { user, profile } = useAuth();
   
-  // Initialize state with current profile data
+  // Initialize state with current profile data (TS errors now resolved by updated Profile interface)
   const [name, setName] = useState(profile?.name || '');
   const [username, setUsername] = useState(profile?.username || '');
-  // CRITICAL FIX: Use the correct column names from the updated UserProfile
   const [phone, setPhone] = useState(profile?.phone_number || ''); 
   const [dob, setDob] = useState(profile?.date_of_birth || '');   
   const [location, setLocation] = useState(profile?.location || ''); 
@@ -45,7 +42,7 @@ const Settings: React.FC = () => {
         .update({
           name: name.trim(),
           username: username.trim(),
-          // CRITICAL FIX: Ensure the keys match the database columns
+          // Keys match the updated Profile interface and database columns
           phone_number: phone.trim() || null, 
           date_of_birth: dob || null, 
           location: location.trim() || null, 
@@ -153,3 +150,5 @@ const Settings: React.FC = () => {
 };
 
 export default Settings;
+
+
