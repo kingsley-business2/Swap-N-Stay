@@ -65,4 +65,3 @@ export interface AdCampaignClient {
     is_active: boolean;
 }
 
-
