@@ -1,18 +1,22 @@
 import { createContext, useState, useEffect, useContext, ReactNode } from 'react';
 import { supabase } from '../api/supabase';
-import { Session } from '@supabase/supabase-js';
+import { Session, User as SupabaseUser } from '@supabase/supabase-js';
+// 1. CRITICAL FIX: Import the complete Profile and Tier types
+import { Profile, Tier } from '../types/custom'; 
 
-// Simple Type Definitions (Assuming these were defined in a removed src/types/auth.ts)
-type User = any;
-type Tier = 'free' | 'premium' | 'gold';
-type Profile = { id: string, name: string, tier: Tier, is_admin: boolean, username: string } | null;
+// Use the standard Supabase User type for the core user object
+type User = SupabaseUser | null;
+
+// Define Login and Register Credentials types (since they are referenced but not defined)
+// Using 'any' as a quick fix, but should be replaced with specific interfaces later.
 type LoginCredentials = any;
 type RegisterCredentials = any;
+
 
 // Define AuthContextType
 interface AuthContextType {
   user: User | null;
-  profile: Profile;
+  profile: Profile; // Now uses the full Profile type
   isAuthenticated: boolean;
   isAdmin: boolean;
   isLoading: boolean;
@@ -49,10 +53,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true); 
   const [isAuthChecked, setIsAuthChecked] = useState(false);
   
+  // NOTE: We only select the columns needed for the initial context/display.
+  // The full Profile type definition in src/types/custom.ts ensures TypeScript
+  // knows the shape of the object we *intend* to manage, even if not all
+  // fields are fetched here initially.
   const fetchProfile = async (userId: string): Promise<Profile> => {
     const { data: profileData, error } = await supabase
       .from('profiles')
-      .select('id, name, tier, is_admin, username') 
+      .select(`
+        id, name, tier, is_admin, username, 
+        phone_number, date_of_birth, location 
+      `) 
       .eq('id', userId)
       .single();
     
@@ -75,13 +86,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           if (currentSession?.user) {
               const userProfile = await fetchProfile(currentSession.user.id);
               
-              const fullUser: User = { 
-                  id: currentSession.user.id, 
-                  email: currentSession.user.email || '', 
-                  profile: userProfile 
-              };
-
-              setUser(fullUser);
+              // Set the Supabase User object directly
+              setUser(currentSession.user); 
               setProfile(userProfile);
               
           } else {
@@ -170,7 +176,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             name: credentials.name || null, 
             tier: 'free' as Tier, // Default tier
             is_admin: false,
-            username: null, 
+            username: credentials.username || null, // Added username insertion on register
+            // Add the new profile fields with null defaults
+            phone_number: null,
+            date_of_birth: null,
+            location: null,
         });
     }
     
