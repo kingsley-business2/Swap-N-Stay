@@ -2,8 +2,7 @@
 export type Tier = 'free' | 'premium' | 'gold';
 
 /**
- * Defines the structure of the user profile stored in Supabase.
- * This structure is used across the application (e.g., AuthContext, Settings.tsx).
+ * Defines the strict, non-nullable structure of the user profile stored in Supabase.
  */
 export interface Profile {
   id: string; // uuid from auth.users
@@ -20,6 +19,9 @@ export interface Profile {
   monthly_post_value?: number; 
   created_at: string; 
 }
+
+// **NEW TYPE EXPORTED TO BE USED BY CONTEXTS AND STATE THAT CAN BE NULL**
+export type NullableProfile = Profile | null;
 
 // Define the base Listing interface (matches the 'listings' table structure)
 export interface Listing {
@@ -64,4 +66,16 @@ export interface AdCampaignClient {
     target_url: string;
     is_active: boolean;
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
