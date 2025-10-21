@@ -1,7 +1,6 @@
 import { createContext, useState, useEffect, useContext, ReactNode } from 'react';
 import { supabase } from '../api/supabase';
 import { Session, User as SupabaseUser } from '@supabase/supabase-js';
-// Removed SetStateAction from imports
 import { Profile, NullableProfile, Tier } from '../types/custom'; 
 
 // Use the standard Supabase User type for the core user object
@@ -203,5 +202,4 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
 export const useAuth = () => useContext(AuthContext);
 
-
-     
+   
