@@ -25,7 +25,7 @@ import Profile from './pages/Profile';
 import SetupProfile from './pages/SetupProfile'; 
 import ErrorPage from './pages/ErrorPage'; 
 import UpgradePage from './pages/Upgrade'; 
-import { Toaster } from 'react-hot-toast'; // Toaster is moved back to main.tsx but keeping import here just in case
+// Toaster is removed as it caused the TS6133 error and is assumed to be in main.tsx
 
 // --------------------------------------------------------------------------------
 
@@ -95,4 +95,13 @@ const App: React.FC = () => {
 };
 
 export default App;
+
+
+
+
+
+
+
+
+
 
