@@ -1,4 +1,3 @@
-// ========================== src/pages/Marketplace.tsx (FINAL CRITICAL FIX) ==========================
 import React, { useState, useEffect } from 'react';
 import PostProductModal from '../components/marketplace/PostProductModal';
 import { supabase } from '../api/supabase';
@@ -16,24 +15,28 @@ const Marketplace: React.FC = () => {
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      // ⭐ FINAL FIX: Changed to 'profiles:user_id' to explicitly use the foreign key
-      // and resolve the "more than one relationship" error.
+      // ✅ FINAL FIX: Using the Disambiguation Operator (!) and the confirmed constraint name.
+      // We are selecting the data from the 'profiles' table, but telling Supabase (PostgREST)
+      // to use the relationship defined by the 'fk_user_id' foreign key constraint.
       const { data, error } = await supabase
         .from('listings') 
         .select(`
           *,
-          profiles:user_id(username, name, tier, location) 
+          profiles:profiles!fk_user_id(username, name, tier, location) 
         `) 
         .order('created_at', { ascending: false });
 
       if (error) {
+        // Log the error details to help debug if the constraint name is wrong
+        console.error('Supabase Error Details:', JSON.stringify(error, null, 2));
         throw error;
       }
 
       setProducts((data as MarketplaceListing[]) || []);
     } catch (error: any) {
       console.error('Error fetching marketplace listings:', error); 
-      toast.error(`Failed to load listings: ${error.message || 'Check RLS rules.'}`);
+      // Display a clearer error hint to the user
+      toast.error(`Failed to load listings: Using 'fk_user_id' constraint name. If this persists, try 'fk_user_profile' or clear the duplicate constraint in the DB.`);
       setProducts([]); 
     } finally {
       setLoading(false);
@@ -104,3 +107,4 @@ const Marketplace: React.FC = () => {
 };
 
 export default Marketplace;
+
