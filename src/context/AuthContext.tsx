@@ -1,14 +1,13 @@
-import { createContext, useState, useEffect, useContext, ReactNode } from 'react';
+import { createContext, useState, useEffect, useContext, ReactNode, SetStateAction } from 'react';
 import { supabase } from '../api/supabase';
 import { Session, User as SupabaseUser } from '@supabase/supabase-js';
-// 1. CRITICAL FIX: Import the complete Profile and Tier types
-import { Profile, Tier } from '../types/custom'; 
+// CRITICAL FIX: Import the new NullableProfile type
+import { Profile, NullableProfile, Tier } from '../types/custom'; 
 
 // Use the standard Supabase User type for the core user object
 type User = SupabaseUser | null;
 
-// Define Login and Register Credentials types (since they are referenced but not defined)
-// Using 'any' as a quick fix, but should be replaced with specific interfaces later.
+// Define Login and Register Credentials types (using any as placeholders)
 type LoginCredentials = any;
 type RegisterCredentials = any;
 
@@ -16,21 +15,21 @@ type RegisterCredentials = any;
 // Define AuthContextType
 interface AuthContextType {
   user: User | null;
-  profile: Profile; // Now uses the full Profile type
+  profile: NullableProfile; // Use NullableProfile here
   isAuthenticated: boolean;
   isAdmin: boolean;
   isLoading: boolean;
   isAuthChecked: boolean;
 
   login: (credentials: LoginCredentials) => Promise<void>;
-  logout: () => Promise<void>;
+  logout: (options?: { scope?: 'global' | 'local' }) => Promise<void>;
   register: (credentials: RegisterCredentials) => Promise<void>;
   refreshProfile: () => Promise<void>; 
 }
 
 const initialAuthContext: AuthContextType = {
   user: null,
-  profile: null,
+  profile: null, // Initialized to null
   isAuthenticated: false,
   isAdmin: false,
   isLoading: true, 
@@ -49,15 +48,12 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<Profile>(null);
+  const [profile, setProfile] = useState<NullableProfile>(null); // State uses NullableProfile
   const [isLoading, setIsLoading] = useState(true); 
   const [isAuthChecked, setIsAuthChecked] = useState(false);
   
-  // NOTE: We only select the columns needed for the initial context/display.
-  // The full Profile type definition in src/types/custom.ts ensures TypeScript
-  // knows the shape of the object we *intend* to manage, even if not all
-  // fields are fetched here initially.
-  const fetchProfile = async (userId: string): Promise<Profile> => {
+  // Update fetchProfile to return the correct NullableProfile
+  const fetchProfile = async (userId: string): Promise<NullableProfile> => {
     const { data: profileData, error } = await supabase
       .from('profiles')
       .select(`
@@ -74,9 +70,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
 
     if (profileData) {
+      // Cast the result to the non-null Profile type
       return profileData as Profile;
     }
-    return null;
+    return null; // Returns null if no profile found
   };
 
   const handleSession = async (currentSession: Session | null) => {
@@ -86,9 +83,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           if (currentSession?.user) {
               const userProfile = await fetchProfile(currentSession.user.id);
               
-              // Set the Supabase User object directly
               setUser(currentSession.user); 
-              setProfile(userProfile);
+              setProfile(userProfile); // Safely sets NullableProfile
               
           } else {
               setUser(null);
@@ -135,7 +131,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Implementation of refreshProfile
   const refreshProfile = async () => {
       if (user?.id) {
-          // Re-fetch the latest profile data from Supabase
           const updatedProfile = await fetchProfile(user.id);
           setProfile(updatedProfile);
       }
@@ -149,9 +144,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (error) throw error;
   };
 
-  const logout = async () => {
+  const logout = async (options?: { scope?: 'global' | 'local' }) => {
     setIsLoading(true);
-    const { error } = await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut(options); 
     setIsLoading(false);
     if (error) console.error("Supabase logout error:", error);
   };
@@ -176,8 +171,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             name: credentials.name || null, 
             tier: 'free' as Tier, // Default tier
             is_admin: false,
-            username: credentials.username || null, // Added username insertion on register
-            // Add the new profile fields with null defaults
+            username: credentials.username || null, 
             phone_number: null,
             date_of_birth: null,
             location: null,
